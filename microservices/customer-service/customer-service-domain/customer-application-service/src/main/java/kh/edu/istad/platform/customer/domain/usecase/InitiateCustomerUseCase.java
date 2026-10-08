@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
 
 @Component
 @Slf4j
@@ -35,6 +34,6 @@ public class InitiateCustomerUseCase {
         customerDomainService.initiateCustomer(customer);
         // save data into database (output port)
         Customer savedCustomer = customerRepository.save(customer);
-        return new InitiateCustomerResult(UUID.randomUUID());
+        return new InitiateCustomerResult(savedCustomer.getId().value());
     }
 }
