@@ -37,9 +37,9 @@ public class CustomerController {
         return customerWebMapper.toResponse(result);
     }
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PutMapping("/{customerId}")
+    @PutMapping("/{id}")
     public void updateCustomer(
-            @PathVariable UUID customerId,
+            @PathVariable("id") UUID customerId,
             @Valid @RequestBody CustomerUpdateRequest customerUpdateRequest
     ) {
         updateCustomerUseCase.execute(
@@ -50,8 +50,9 @@ public class CustomerController {
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PatchMapping("/{customerId}/deactivate")
-    public void deactivateCustomer(@PathVariable UUID customerId) {
+    @PatchMapping("/{id}/deactivate")
+    public void deactivateCustomer(
+            @PathVariable ("id") UUID customerId) {
         deactivateCustomerUseCase.execute(customerId);
     }
 
