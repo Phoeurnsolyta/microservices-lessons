@@ -2,8 +2,11 @@ package kh.edu.istad.platform.customer.domain.usecase;
 
 import kh.edu.istad.platform.customer.domain.dto.InitiateCustomerCommand;
 import kh.edu.istad.platform.customer.domain.dto.InitiateCustomerResult;
+import kh.edu.istad.platform.customer.domain.entity.Customer;
 import kh.edu.istad.platform.customer.domain.port.out.CustomerRepository;
 import kh.edu.istad.platform.customer.domain.service.CustomerDomainService;
+import kh.edu.istad.platform.customer.domain.valueobject.Email;
+import kh.edu.istad.platform.customer.domain.valueobject.PhoneNumber;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,10 +24,17 @@ public class InitiateCustomerUseCase {
     public InitiateCustomerResult execute(InitiateCustomerCommand command) {
         log.info("initiate customer usecase: {}", command);
         // validate by load data from persistence (output port)
+        Customer customer = Customer.builder()
+                .username(command.username())
+                .familyName(command.familyName())
+                .givenName(command.givenName())
+                .email(new Email(command.email()))
+                .phoneNumber(new PhoneNumber(command.phoneNumber()))
+                .build();
         // invoke domain logic (called domain service)
-        //customerDomainService.initiateCustomer(customer);
+        customerDomainService.initiateCustomer(customer);
         // save data into database (output port)
-//        customerRepository.save()
+        Customer savedCustomer = customerRepository.save(customer);
         return new InitiateCustomerResult(UUID.randomUUID());
     }
 }

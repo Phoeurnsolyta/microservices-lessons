@@ -17,7 +17,7 @@ public class CustomerDomainServiceImpl implements CustomerDomainService {
     }
 
     @Override
-    public CustomerUpdatedEvent updateCustomer(Customer customer) {
+    public CustomerUpdatedEvent updateCustomer(Customer customer, String familyName, String givenName) {
         customer.updateCustomer(customer.getFamilyName(), customer.getGivenName());
         return new CustomerUpdatedEvent(customer, ZonedDateTime.now(ZoneId.of("UTC")));
     }
