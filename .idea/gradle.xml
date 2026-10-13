@@ -48,6 +48,30 @@
                   <project path="$PROJECT_DIR$/microservices/customer-service/customer-service-restapi" />
                 </projects>
               </build>
+              <build path="$PROJECT_DIR$/microservices/order-service" name="order-service">
+                <projects>
+                  <project path="$PROJECT_DIR$/microservices/order-service" />
+                  <project path="$PROJECT_DIR$/microservices/order-service/order-service-domain" />
+                  <project path="$PROJECT_DIR$/microservices/order-service/order-service-domain/order-application-service" />
+                  <project path="$PROJECT_DIR$/microservices/order-service/order-service-domain/order-domain-core" />
+                  <project path="$PROJECT_DIR$/microservices/order-service/order-service-main" />
+                  <project path="$PROJECT_DIR$/microservices/order-service/order-service-message" />
+                  <project path="$PROJECT_DIR$/microservices/order-service/order-service-persistence" />
+                  <project path="$PROJECT_DIR$/microservices/order-service/order-service-restapi" />
+                </projects>
+              </build>
+              <build path="$PROJECT_DIR$/microservices/payment-service" name="payment-service">
+                <projects>
+                  <project path="$PROJECT_DIR$/microservices/payment-service" />
+                  <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-domain" />
+                  <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-domain/payment-application-service" />
+                  <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-domain/payment-domain-core" />
+                  <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-main" />
+                  <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-message" />
+                  <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-persistence" />
+                  <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-restapi" />
+                </projects>
+              </build>
             </builds>
           </compositeBuild>
         </compositeConfiguration>
@@ -77,6 +101,22 @@
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-message" />
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-persistence" />
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-restapi" />
+            <option value="$PROJECT_DIR$/microservices/order-service" />
+            <option value="$PROJECT_DIR$/microservices/order-service/order-service-domain" />
+            <option value="$PROJECT_DIR$/microservices/order-service/order-service-domain/order-application-service" />
+            <option value="$PROJECT_DIR$/microservices/order-service/order-service-domain/order-domain-core" />
+            <option value="$PROJECT_DIR$/microservices/order-service/order-service-main" />
+            <option value="$PROJECT_DIR$/microservices/order-service/order-service-message" />
+            <option value="$PROJECT_DIR$/microservices/order-service/order-service-persistence" />
+            <option value="$PROJECT_DIR$/microservices/order-service/order-service-restapi" />
+            <option value="$PROJECT_DIR$/microservices/payment-service" />
+            <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-domain" />
+            <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-domain/payment-application-service" />
+            <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-domain/payment-domain-core" />
+            <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-main" />
+            <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-message" />
+            <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-persistence" />
+            <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-restapi" />
           </set>
         </option>
       </GradleProjectSettings>
