@@ -25,7 +25,7 @@ public class BusinessReactiveRepositoryAdapter implements BusinessRepository {
                 business.getBusinessId().value(),
                 business.getBusinessName().legalName(),
                 business.getBusinessName().displayName(),
-                business.getBusinessContact().emails(),
+                business.getBusinessContact().email(),
                 business.getBusinessContact().phoneNumber(),
                 business.isActive()
         );

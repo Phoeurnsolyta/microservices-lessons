@@ -32,7 +32,7 @@ public class RegisterBusinessUseCase {
                             command.displayName()
                     ),
                     new BusinessContact(
-                            command.emails(),
+                            command.email(),
                             command.phoneNumber()
                     )
             );
@@ -42,7 +42,7 @@ public class RegisterBusinessUseCase {
                             savedBusiness.getBusinessId().value(),
                             savedBusiness.getBusinessName().legalName(),
                             savedBusiness.getBusinessName().displayName(),
-                            savedBusiness.getBusinessContact().emails(),
+                            savedBusiness.getBusinessContact().email(),
                             savedBusiness.getBusinessContact().phoneNumber(),
                             savedBusiness.isActive()
                     ));

@@ -5,7 +5,6 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -22,7 +21,7 @@ public class BusinessDocument {
     private UUID businessId;
     private String legalName;
     private String displayName;
-    private List<String> emails;
+    private String email;
     private String phoneNumber;
     private boolean active;
 
@@ -30,7 +29,7 @@ public class BusinessDocument {
             UUID businessId,
             String legalName,
             String displayName,
-            List<String> emails,
+            String email,
             String phoneNumber,
             boolean active
     ) {
@@ -38,7 +37,7 @@ public class BusinessDocument {
         this.businessId = businessId;
         this.legalName = legalName;
         this.displayName = displayName;
-        this.emails = emails == null ? List.of() : List.copyOf(emails);
+        this.email = email ;
         this.phoneNumber = phoneNumber;
         this.active = active;
     }
