@@ -6,12 +6,7 @@ spring:
     host: localhost
     port: 2026
     username: mongod
-    password:
-      - m
-      - o
-      - n
-      - g
-      - o
-      - d
+    password: mongod
     database: business_db
     authentication-database: admin
+    uuid-representation: standard
