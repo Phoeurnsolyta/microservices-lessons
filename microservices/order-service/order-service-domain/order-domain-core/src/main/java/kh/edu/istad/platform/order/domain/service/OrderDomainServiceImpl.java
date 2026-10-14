@@ -10,9 +10,8 @@ import java.time.ZonedDateTime;
 public class OrderDomainServiceImpl implements OrderDomainService {
     @Override
     public OrderCreatedEvent createOrder(Order order) {
-        order.initializeOrder();
 
-        return new OrderCreatedEvent(order,order.getCreatedAt());
+        return order.initializeOrder();
     }
 
     @Override

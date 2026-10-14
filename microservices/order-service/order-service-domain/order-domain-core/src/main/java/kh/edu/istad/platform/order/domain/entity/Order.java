@@ -104,7 +104,7 @@ public class Order extends AggregateRoot<OrderId> {
         }
     }
 
-    public void initializeOrder() {
+    public OrderCreatedEvent initializeOrder() {
         if (orderStatus != null) {
             throw new IllegalStateException(
                     "Order has already been initialized"
@@ -116,7 +116,10 @@ public class Order extends AggregateRoot<OrderId> {
         createdAt = ZonedDateTime.now();
         failureMessages.clear();
 
-        domainEvents.add(new OrderCreatedEvent(this, createdAt));
+        OrderCreatedEvent event = new OrderCreatedEvent(this, createdAt);
+        domainEvents.add(event);
+
+        return event;
     }
 
     public void pay() {

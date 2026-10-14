@@ -37,10 +37,13 @@ public class OrderEntity {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
+    @Column(nullable = false)
     private UUID trackingId;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderStatus orderStatus;
 
+    @Column(nullable = false)
     private ZonedDateTime createdAt;
 }
