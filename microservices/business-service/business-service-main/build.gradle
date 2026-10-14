@@ -1,20 +1,12 @@
 plugins {
-    id 'java'
-}
-
-group = 'co.istad'
-version = 'unspecified'
-
-repositories {
-    mavenCentral()
+    id 'spring-boot-common-conventions'
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    implementation 'kh.edu.istad:business-domain-core'
+    implementation 'kh.edu.istad:business-application-service'
+    implementation 'kh.edu.istad:business-service-message'
+    implementation 'kh.edu.istad:business-service-persistence'
+    implementation 'kh.edu.istad:business-service-restapi'
 
-test {
-    useJUnitPlatform()
 }

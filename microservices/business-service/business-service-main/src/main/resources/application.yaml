@@ -1,0 +1,16 @@
+server:
+  port: 7777
+
+spring:
+  mongodb:
+    host: localhost
+    port: 2026
+    username: mongod
+    password:
+      - m
+      - o
+      - n
+      - g
+      - o
+      - d
+    database: business_db
