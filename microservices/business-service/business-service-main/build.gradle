@@ -9,4 +9,6 @@ dependencies {
     implementation 'kh.edu.istad:business-service-persistence'
     implementation 'kh.edu.istad:business-service-restapi'
 
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
 }
