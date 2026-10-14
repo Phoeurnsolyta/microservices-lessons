@@ -1,20 +1,14 @@
 plugins {
-    id 'java'
-}
-
-group = 'co.istad'
-version = 'unspecified'
-
-repositories {
-    mavenCentral()
+    id 'spring-boot-common-conventions'
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+    implementation 'kh.edu.istad:payment-domain-core'
+    implementation 'kh.edu.istad:payment-application-service'
+    implementation 'kh.edu.istad:payment-service-message'
+    implementation 'kh.edu.istad:payment-service-persistence'
+    implementation 'kh.edu.istad:payment-service-restapi'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
-test {
-    useJUnitPlatform()
+
 }
