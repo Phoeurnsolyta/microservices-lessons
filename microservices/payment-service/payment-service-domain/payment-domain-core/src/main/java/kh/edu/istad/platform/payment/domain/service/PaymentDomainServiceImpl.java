@@ -3,18 +3,16 @@ package kh.edu.istad.platform.payment.domain.service;
 import kh.edu.istad.platform.payment.domain.entity.CreditEntry;
 import kh.edu.istad.platform.payment.domain.entity.CreditHistory;
 import kh.edu.istad.platform.payment.domain.entity.Payment;
+import kh.edu.istad.platform.payment.domain.exception.PaymentDomainException;
 import kh.edu.istad.platform.payment.domain.valueobject.PaymentStatus;
 import kh.edu.istad.platform.payment.domain.valueobject.TransactionType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class PaymentDomainServiceImpl implements PaymentDomainService {
     @Override
     public List<String> validatePayment(Payment payment, CreditEntry creditEntry) {
-        Objects.requireNonNull(payment, "Payment is required");
-        Objects.requireNonNull(creditEntry, "Credit entry is required");
 
         List<String> failures = new ArrayList<>();
 
@@ -39,7 +37,9 @@ public class PaymentDomainServiceImpl implements PaymentDomainService {
         List<String> failures = validatePayment(payment, creditEntry);
 
         if (!failures.isEmpty()) {
-            throw new IllegalStateException(String.join("; ", failures));
+            throw new PaymentDomainException(
+                    String.join("; ", failures)
+            );
         }
 
         creditEntry.subtractCreditAmount(payment.getPrice());

@@ -8,6 +8,7 @@ import kh.edu.istad.common.domain.valueobject.OrderId;
 import kh.edu.istad.platform.order.domain.event.OrderCancelledEvent;
 import kh.edu.istad.platform.order.domain.event.OrderCreatedEvent;
 import kh.edu.istad.platform.order.domain.event.OrderPaidEvent;
+import kh.edu.istad.platform.order.domain.exception.OrderDomainException;
 import kh.edu.istad.platform.order.domain.valueobject.BusinessId;
 import kh.edu.istad.platform.order.domain.valueobject.Money;
 import kh.edu.istad.platform.order.domain.valueobject.OrderStatus;
@@ -67,29 +68,24 @@ public class Order extends AggregateRoot<OrderId> {
 
     public void validateOrder() {
         if (getId() == null) {
-            throw new IllegalArgumentException("Order ID cannot be null");
+            throw new OrderDomainException("Order ID cannot be null");
         }
-
         if (customerId == null) {
-            throw new IllegalArgumentException("Customer ID cannot be null");
+            throw new OrderDomainException("Customer ID cannot be null");
         }
-
         if (businessId == null) {
-            throw new IllegalArgumentException("Business ID cannot be null");
+            throw new OrderDomainException("Business ID cannot be null");
         }
-
         if (deliveryAddress == null) {
-            throw new IllegalArgumentException("Delivery address cannot be null");
+            throw new OrderDomainException("Delivery address cannot be null");
         }
-
         if (items == null || items.isEmpty()) {
-            throw new IllegalArgumentException(
+            throw new OrderDomainException(
                     "Order must contain at least one item"
             );
         }
-
         if (price == null) {
-            throw new IllegalArgumentException("Order price cannot be null");
+            throw new OrderDomainException("Order price cannot be null");
         }
 
         BigDecimal itemsTotal = items.stream()
@@ -98,7 +94,7 @@ public class Order extends AggregateRoot<OrderId> {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (price.amount().compareTo(itemsTotal) != 0) {
-            throw new IllegalArgumentException(
+            throw new OrderDomainException(
                     "Order price must equal the sum of item subtotals"
             );
         }
@@ -106,7 +102,7 @@ public class Order extends AggregateRoot<OrderId> {
 
     public OrderCreatedEvent initializeOrder() {
         if (orderStatus != null) {
-            throw new IllegalStateException(
+            throw new OrderDomainException(
                     "Order has already been initialized"
             );
         }
@@ -124,7 +120,7 @@ public class Order extends AggregateRoot<OrderId> {
 
     public void pay() {
         if (orderStatus != OrderStatus.PENDING) {
-            throw new IllegalStateException(
+            throw new OrderDomainException(
                     "Only pending orders can be paid"
             );
         }
@@ -137,7 +133,7 @@ public class Order extends AggregateRoot<OrderId> {
 
     public void approve() {
         if (orderStatus != OrderStatus.PAID) {
-            throw new IllegalStateException(
+            throw new OrderDomainException(
                     "Only paid orders can be approved"
             );
         }
@@ -148,7 +144,7 @@ public class Order extends AggregateRoot<OrderId> {
     public void initCancel() {
         if (orderStatus != OrderStatus.PENDING
                 && orderStatus != OrderStatus.PAID) {
-            throw new IllegalStateException(
+            throw new OrderDomainException(
                     "Only pending or paid orders can begin cancellation"
             );
         }
@@ -158,7 +154,7 @@ public class Order extends AggregateRoot<OrderId> {
 
     public void cancel() {
         if (orderStatus != OrderStatus.CANCELLING) {
-            throw new IllegalStateException(
+            throw new OrderDomainException(
                     "Order must be cancelling before it can be cancelled"
             );
         }

@@ -1,11 +1,11 @@
 package kh.edu.istad.platform.business.domain.entity;
 
 import kh.edu.istad.common.domain.valueobject.OrderId;
+import kh.edu.istad.platform.business.domain.exception.BusinessDomainException;
 import kh.edu.istad.platform.business.domain.valueobject.Money;
 import kh.edu.istad.platform.business.domain.valueobject.OrderStatus;
 
 import java.util.List;
-import java.util.Objects;
 
 public class OrderDetail {
 
@@ -20,15 +20,12 @@ public class OrderDetail {
             Money totalAmount,
             List<Product> products
     ) {
-        this.orderId = Objects.requireNonNull(
-                orderId, "Order ID cannot be null");
-        this.orderStatus = Objects.requireNonNull(
-                orderStatus, "Order status cannot be null");
-        this.products = List.copyOf(
-                Objects.requireNonNull(products, "Products cannot be null"));
+        this.orderId = orderId;
+        this.orderStatus = orderStatus;
+        this.products = List.copyOf(products);
 
         if (this.products.isEmpty()) {
-            throw new IllegalArgumentException(
+            throw new BusinessDomainException(
                     "Order must contain at least one product");
         }
 
@@ -50,19 +47,20 @@ public class OrderDetail {
     }
 
     private void validateTotalAmount(Money suppliedTotal) {
-        Objects.requireNonNull(
-                suppliedTotal, "Total amount cannot be null");
+        if (suppliedTotal == null) {
+            throw new BusinessDomainException(
+                    "Total amount cannot be null");
+        }
 
         if (calculateTotal().amount()
                 .compareTo(suppliedTotal.amount()) != 0) {
-            throw new IllegalArgumentException(
+            throw new BusinessDomainException(
                     "Supplied total does not match product totals");
         }
     }
 
     public void updateStatus(OrderStatus orderStatus) {
-        this.orderStatus = Objects.requireNonNull(
-                orderStatus, "Order status cannot be null");
+        this.orderStatus = orderStatus;
     }
 
     public OrderId getOrderId() {

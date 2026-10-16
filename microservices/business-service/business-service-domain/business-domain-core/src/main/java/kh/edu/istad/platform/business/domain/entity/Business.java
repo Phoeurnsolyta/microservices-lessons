@@ -6,6 +6,7 @@ import kh.edu.istad.platform.business.domain.event.BusinessRegisteredEvent;
 import kh.edu.istad.platform.business.domain.event.OrderApprovalEvent;
 import kh.edu.istad.platform.business.domain.event.OrderApprovedEvent;
 import kh.edu.istad.platform.business.domain.event.OrderRejectedEvent;
+import kh.edu.istad.platform.business.domain.exception.BusinessDomainException;
 import kh.edu.istad.platform.business.domain.valueobject.BusinessContact;
 import kh.edu.istad.platform.business.domain.valueobject.BusinessName;
 import kh.edu.istad.platform.business.domain.valueobject.OrderApprovalStatus;
@@ -14,7 +15,6 @@ import kh.edu.istad.platform.business.domain.valueobject.OrderStatus;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Business {
 
@@ -33,12 +33,9 @@ public class Business {
             BusinessName businessName,
             BusinessContact businessContact
     ) {
-        this.businessId = Objects.requireNonNull(
-                businessId, "Business ID cannot be null");
-        this.businessName = Objects.requireNonNull(
-                businessName, "Business name cannot be null");
-        this.businessContact = Objects.requireNonNull(
-                businessContact, "Business contact cannot be null");
+        this.businessId = businessId;
+        this.businessName = businessName;
+        this.businessContact = businessContact;
         this.active = true;
     }
 
@@ -66,7 +63,7 @@ public class Business {
 //    validateBusiness()
     public void validateBusiness() {
         if (!active) {
-            throw new IllegalStateException(
+            throw new BusinessDomainException(
                     "Inactive businesses cannot process orders");
         }
     }
@@ -76,9 +73,12 @@ public class Business {
     }
 
     public void initializeOrder(OrderDetail orderDetail) {
-        this.orderDetail = Objects.requireNonNull(
-                orderDetail, "Order detail cannot be null");
+        if (orderDetail == null) {
+            throw new BusinessDomainException(
+                    "Order detail cannot be null");
+        }
 
+        this.orderDetail = orderDetail;
         this.orderApproval = null;
     }
 //validateOrder()
@@ -86,36 +86,33 @@ public class Business {
         validateBusiness();
 
         if (orderDetail == null) {
-            throw new IllegalStateException(
+            throw new BusinessDomainException(
                     "Order detail must be initialized first");
         }
-
         if (orderDetail.getOrderStatus() != OrderStatus.PENDING
                 && orderDetail.getOrderStatus() != OrderStatus.PAID) {
-            throw new IllegalStateException(
+            throw new BusinessDomainException(
                     "Only pending or paid orders can be reviewed");
         }
-
         if (orderDetail.getProducts().isEmpty()) {
-            throw new IllegalStateException(
+            throw new BusinessDomainException(
                     "Order must contain at least one product");
         }
-
         for (Product product : orderDetail.getProducts()) {
             if (!product.isAvailable()) {
-                throw new IllegalStateException(
+                throw new BusinessDomainException(
                         "Product is unavailable: " + product.getName());
             }
 
             if (product.getQuantity() <= 0) {
-                throw new IllegalStateException(
+                throw new BusinessDomainException(
                         "Product quantity must be greater than zero: "
                                 + product.getName());
             }
         }
 
         if (orderDetail.calculateTotal().amount().signum() <= 0) {
-            throw new IllegalStateException(
+            throw new BusinessDomainException(
                     "Order total must be greater than zero");
         }
     }
@@ -123,7 +120,7 @@ public class Business {
 //    constructOrderApproval()
     public OrderApproval constructOrderApproval() {
         if (orderDetail == null) {
-            throw new IllegalStateException(
+            throw new BusinessDomainException(
                     "Order detail must be initialized before approval");
         }
 

@@ -1,9 +1,8 @@
 package kh.edu.istad.platform.business.domain.entity;
 
+import kh.edu.istad.platform.business.domain.exception.BusinessDomainException;
 import kh.edu.istad.platform.business.domain.valueobject.Money;
 import kh.edu.istad.platform.business.domain.valueobject.ProductId;
-
-import java.util.Objects;
 
 public class Product {
 
@@ -20,8 +19,7 @@ public class Product {
             int quantity,
             boolean available
     ) {
-        this.productId = Objects.requireNonNull(
-                productId, "Product ID cannot be null");
+        this.productId = productId;
 
         setName(name);
         setPrice(price);
@@ -31,22 +29,27 @@ public class Product {
 
     public void setName(String name) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException(
+            throw new BusinessDomainException(
                     "Product name cannot be blank");
         }
         this.name = name.trim();
     }
 
     public void setPrice(Money price) {
-        this.price = Objects.requireNonNull(
-                price, "Product price cannot be null");
+        if (price == null) {
+            throw new BusinessDomainException(
+                    "Product price cannot be null");
+        }
+
+        this.price = price;
     }
 
     public void setQuantity(int quantity) {
         if (quantity < 0) {
-            throw new IllegalArgumentException(
+            throw new BusinessDomainException(
                     "Product quantity cannot be negative");
         }
+
         this.quantity = quantity;
     }
 

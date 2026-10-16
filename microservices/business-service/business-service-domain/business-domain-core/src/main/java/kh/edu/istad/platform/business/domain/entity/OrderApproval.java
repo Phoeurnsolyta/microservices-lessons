@@ -5,7 +5,6 @@ import kh.edu.istad.common.domain.valueobject.OrderId;
 import kh.edu.istad.platform.business.domain.valueobject.OrderApprovalId;
 import kh.edu.istad.platform.business.domain.valueobject.OrderApprovalStatus;
 
-import java.util.Objects;
 
 public class OrderApproval {
 
@@ -20,14 +19,10 @@ public class OrderApproval {
             OrderId orderId,
             OrderApprovalStatus approvalStatus
     ) {
-        this.orderApprovalId = Objects.requireNonNull(
-                orderApprovalId, "Order approval ID cannot be null");
-        this.businessId = Objects.requireNonNull(
-                businessId, "Business ID cannot be null");
-        this.orderId = Objects.requireNonNull(
-                orderId, "Order ID cannot be null");
-        this.approvalStatus = Objects.requireNonNull(
-                approvalStatus, "Approval status cannot be null");
+        this.orderApprovalId = orderApprovalId;
+        this.businessId = businessId;
+        this.orderId = orderId;
+        this.approvalStatus = approvalStatus;
     }
 
     public static OrderApproval create(

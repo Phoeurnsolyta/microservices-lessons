@@ -5,7 +5,6 @@ import kh.edu.istad.platform.payment.domain.valueobject.CustomerId;
 import kh.edu.istad.platform.payment.domain.valueobject.Money;
 import kh.edu.istad.platform.payment.domain.valueobject.TransactionType;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class CreditHistory {
@@ -32,24 +31,6 @@ public class CreditHistory {
             Money amount,
             TransactionType transactionType
     ) {
-        Objects.requireNonNull(
-                customerId,
-                "Customer ID is required"
-        );
-        Objects.requireNonNull(
-                amount,
-                "Transaction amount is required"
-        );
-        Objects.requireNonNull(
-                transactionType,
-                "Transaction type is required"
-        );
-
-        if (amount.isZero()) {
-            throw new IllegalArgumentException(
-                    "Transaction amount must be greater than zero"
-            );
-        }
 
         return new CreditHistory(
                 new CreditHistoryId(UUID.randomUUID()),

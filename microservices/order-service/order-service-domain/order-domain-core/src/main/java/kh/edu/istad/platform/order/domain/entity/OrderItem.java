@@ -3,6 +3,7 @@ package kh.edu.istad.platform.order.domain.entity;
 
 import kh.edu.istad.common.domain.entity.BaseEntity;
 import kh.edu.istad.common.domain.valueobject.OrderId;
+import kh.edu.istad.platform.order.domain.exception.OrderDomainException;
 import kh.edu.istad.platform.order.domain.valueobject.Money;
 import kh.edu.istad.platform.order.domain.valueobject.OrderItemId;
 
@@ -16,27 +17,30 @@ public class OrderItem extends BaseEntity<OrderItemId> {
 
     private OrderItem(Builder builder) {
         if (builder.id == null) {
-            throw new IllegalArgumentException(
+            throw new OrderDomainException(
                     "Order item ID cannot be null"
             );
         }
 
         if (builder.orderId == null) {
-            throw new IllegalArgumentException("Order ID cannot be null");
+            throw new OrderDomainException(
+                    "Order ID cannot be null"
+            );
         }
-
         if (builder.product == null) {
-            throw new IllegalArgumentException("Product cannot be null");
+            throw new OrderDomainException(
+                    "Product cannot be null"
+            );
         }
-
         if (builder.quantity == null || builder.quantity <= 0) {
-            throw new IllegalArgumentException(
+            throw new OrderDomainException(
                     "Quantity must be greater than zero"
             );
         }
-
         if (builder.price == null) {
-            throw new IllegalArgumentException("Price cannot be null");
+            throw new OrderDomainException(
+                    "Price cannot be null"
+            );
         }
 
         setId(builder.id);

@@ -1,12 +1,12 @@
 package kh.edu.istad.platform.payment.domain.entity;
 
 import kh.edu.istad.common.domain.event.DomainEvent;
+import kh.edu.istad.platform.payment.domain.exception.PaymentDomainException;
 import kh.edu.istad.platform.payment.domain.valueobject.*;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 public class Payment {
@@ -50,12 +50,20 @@ public class Payment {
             CustomerId customerId,
             Money price
     ) {
-        Objects.requireNonNull(orderId, "Order ID is required");
-        Objects.requireNonNull(customerId, "Customer ID is required");
-        Objects.requireNonNull(price, "Payment price is required");
+        if (orderId == null) {
+            throw new PaymentDomainException("Order ID is required");
+        }
+
+        if (customerId == null) {
+            throw new PaymentDomainException("Customer ID is required");
+        }
+
+        if (price == null) {
+            throw new PaymentDomainException("Payment price is required");
+        }
 
         if (price.amount().signum() <= 0) {
-            throw new IllegalArgumentException(
+            throw new PaymentDomainException(
                     "Payment price must be greater than zero"
             );
         }
@@ -71,16 +79,21 @@ public class Payment {
     }
 
     public void updateStatus(PaymentStatus newStatus) {
-        Objects.requireNonNull(newStatus, "Payment status is required");
+
+        if (newStatus == null) {
+            throw new PaymentDomainException(
+                    "Payment status is required"
+            );
+        }
 
         if (paymentStatus != PaymentStatus.PENDING) {
-            throw new IllegalStateException(
+            throw new PaymentDomainException(
                     "Only a pending payment can change status"
             );
         }
 
         if (newStatus == PaymentStatus.PENDING) {
-            throw new IllegalArgumentException(
+            throw new PaymentDomainException(
                     "New status must be a final payment status"
             );
         }

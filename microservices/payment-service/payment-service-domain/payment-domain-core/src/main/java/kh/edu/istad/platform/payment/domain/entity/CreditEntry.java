@@ -1,10 +1,10 @@
 package kh.edu.istad.platform.payment.domain.entity;
 
+import kh.edu.istad.platform.payment.domain.exception.PaymentDomainException;
 import kh.edu.istad.platform.payment.domain.valueobject.CreditEntryId;
 import kh.edu.istad.platform.payment.domain.valueobject.CustomerId;
 import kh.edu.istad.platform.payment.domain.valueobject.Money;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class CreditEntry {
@@ -26,11 +26,9 @@ public class CreditEntry {
     public static CreditEntry initializeCreditEntry(
             CustomerId customerId
     ) {
-        Objects.requireNonNull(
-                customerId,
-                "Customer ID is required"
-        );
-
+        if (customerId == null) {
+            throw new PaymentDomainException("Customer ID is required");
+        }
         return new CreditEntry(
                 new CreditEntryId(UUID.randomUUID()),
                 customerId,
@@ -47,7 +45,7 @@ public class CreditEntry {
         validateAmount(amount);
 
         if (amount.isGreaterThan(totalCreditAmount)) {
-            throw new IllegalArgumentException(
+            throw new PaymentDomainException(
                     "Insufficient credit balance"
             );
         }
@@ -55,13 +53,14 @@ public class CreditEntry {
     }
 
     private void validateAmount(Money amount) {
-        Objects.requireNonNull(
-                amount,
-                "Credit amount is required"
-        );
+        if (amount == null) {
+            throw new PaymentDomainException(
+                    "Credit amount is required"
+            );
+        }
 
-        if (amount.isZero()) {
-            throw new IllegalArgumentException(
+        if (amount.amount().signum() <= 0) {
+            throw new PaymentDomainException(
                     "Credit amount must be greater than zero"
             );
         }
