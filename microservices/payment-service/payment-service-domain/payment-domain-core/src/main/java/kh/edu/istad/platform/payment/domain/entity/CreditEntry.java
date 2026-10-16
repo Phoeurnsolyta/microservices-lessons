@@ -5,7 +5,6 @@ import kh.edu.istad.platform.payment.domain.valueobject.CreditEntryId;
 import kh.edu.istad.platform.payment.domain.valueobject.CustomerId;
 import kh.edu.istad.platform.payment.domain.valueobject.Money;
 
-import java.util.UUID;
 
 public class CreditEntry {
 
@@ -23,19 +22,6 @@ public class CreditEntry {
         this.totalCreditAmount = totalCreditAmount;
     }
 
-    public static CreditEntry initializeCreditEntry(
-            CustomerId customerId
-    ) {
-        if (customerId == null) {
-            throw new PaymentDomainException("Customer ID is required");
-        }
-        return new CreditEntry(
-                new CreditEntryId(UUID.randomUUID()),
-                customerId,
-                Money.zero()
-        );
-    }
-
     public void addCreditAmount(Money amount) {
         validateAmount(amount);
         totalCreditAmount = totalCreditAmount.add(amount);
@@ -51,6 +37,7 @@ public class CreditEntry {
         }
         totalCreditAmount = totalCreditAmount.subtract(amount);
     }
+
 
     private void validateAmount(Money amount) {
         if (amount == null) {
