@@ -45,6 +45,12 @@ public class CreditEntry {
 
     public void subtractCreditAmount(Money amount) {
         validateAmount(amount);
+
+        if (amount.isGreaterThan(totalCreditAmount)) {
+            throw new IllegalArgumentException(
+                    "Insufficient credit balance"
+            );
+        }
         totalCreditAmount = totalCreditAmount.subtract(amount);
     }
 
@@ -59,6 +65,18 @@ public class CreditEntry {
                     "Credit amount must be greater than zero"
             );
         }
+    }
+
+    public static CreditEntry restore(
+            CreditEntryId creditEntryId,
+            CustomerId customerId,
+            Money totalCreditAmount
+    ) {
+        return new CreditEntry(
+                creditEntryId,
+                customerId,
+                totalCreditAmount
+        );
     }
 
     public CreditEntryId getCreditEntryId() {

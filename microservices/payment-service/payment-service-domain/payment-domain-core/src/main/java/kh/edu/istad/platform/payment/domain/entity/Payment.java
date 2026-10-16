@@ -1,8 +1,11 @@
 package kh.edu.istad.platform.payment.domain.entity;
 
+import kh.edu.istad.common.domain.event.DomainEvent;
 import kh.edu.istad.platform.payment.domain.valueobject.*;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,6 +17,17 @@ public class Payment {
     private final Money price;
     private PaymentStatus paymentStatus;
     private final ZonedDateTime createdAt;
+
+    private final List<DomainEvent<Payment>> domainEvents =
+            new ArrayList<>();
+
+    public List<DomainEvent<Payment>> getDomainEvents() {
+        return List.copyOf(domainEvents);
+    }
+
+    public void clearDomainEvents() {
+        domainEvents.clear();
+    }
 
     private Payment(
             PaymentId paymentId,
