@@ -11,11 +11,11 @@ import java.util.Optional;
 public interface CustomerRepository {
     Mono <Customer> save(Customer customer);
 
-    Mono<Customer> findById(CustomerId customerId);
+    Mono<Customer> findById(CustomerId id);
 
     Flux<Customer> findAll();
 
-    Mono<Void> deleteById(CustomerId customerId);
+    Mono<Void> deleteById(CustomerId id);
 
     Mono<Customer> findByUsername(String username);
 

@@ -3,9 +3,8 @@ package kh.edu.istad.platform.customer.restapi.controller;
 import jakarta.validation.Valid;
 import kh.edu.istad.platform.customer.domain.dto.InitiateCustomerResult;
 import kh.edu.istad.platform.customer.domain.entity.Customer;
-import kh.edu.istad.platform.customer.domain.usecase.DeactivateCustomerUseCase;
-import kh.edu.istad.platform.customer.domain.usecase.InitiateCustomerUseCase;
-import kh.edu.istad.platform.customer.domain.usecase.UpdateCustomerUseCase;
+import kh.edu.istad.platform.customer.domain.usecase.*;
+import kh.edu.istad.platform.customer.restapi.dto.CreateCustomerRequest;
 import kh.edu.istad.platform.customer.restapi.dto.CustomerInitiateRequest;
 import kh.edu.istad.platform.customer.restapi.dto.CustomerInitiateResponse;
 import kh.edu.istad.platform.customer.restapi.dto.CustomerUpdateRequest;
@@ -27,21 +26,35 @@ public class CustomerController {
     private final UpdateCustomerUseCase updateCustomerUseCase;
     private final DeactivateCustomerUseCase deactivateCustomerUseCase;
     private final CustomerWebMapper customerWebMapper;
+    private final CreateCustomerUseCase  createCustomerUseCase;
+    private final QueryCustomerUseCase queryCustomerUseCase;
 
 
-    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public Mono<CustomerInitiateResponse> initiateCustomer(
-            @Valid @RequestBody CustomerInitiateRequest request
-    ) {
-        return initiateCustomerUseCase
-                .execute(customerWebMapper.toCommand(request))
-                .map(customerWebMapper::toResponse);
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<Customer> create (@RequestBody CreateCustomerRequest request) {
+        return createCustomerUseCase.create(customerWebMapper.toDomain(request));
+    }
+
+
+//    @ResponseStatus(HttpStatus.CREATED)
+//    @PostMapping
+//    public Mono<CustomerInitiateResponse> initiateCustomer(
+//            @Valid @RequestBody CustomerInitiateRequest request
+//    ) {
+//        return initiateCustomerUseCase
+//                .execute(customerWebMapper.toCommand(request))
+//                .map(customerWebMapper::toResponse);
+//    }
+
+    @GetMapping ("/query")
+    public Flux<Customer> query() {
+        return queryCustomerUseCase.findAll();
     }
 
     @GetMapping
     public Flux<Customer> findAll() {
-        return null;
+        return queryCustomerUseCase.findAll();
     }
 
 //    @ResponseStatus(HttpStatus.CREATED)

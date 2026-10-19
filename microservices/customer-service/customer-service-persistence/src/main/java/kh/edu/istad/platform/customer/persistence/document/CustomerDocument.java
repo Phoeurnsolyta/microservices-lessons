@@ -18,7 +18,7 @@ import java.util.UUID;
 public class CustomerDocument implements Persistable<String> {
 
     @Id
-    private UUID id;
+    private String id;
 
     private String username;
     private String familyName;

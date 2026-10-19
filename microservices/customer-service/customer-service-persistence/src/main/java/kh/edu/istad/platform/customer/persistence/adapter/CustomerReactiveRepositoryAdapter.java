@@ -26,16 +26,17 @@ public class CustomerReactiveRepositoryAdapter implements CustomerRepository {
 
     @Override
     public Mono<Customer> save(Customer customer) {
-        CustomerDocument document =
-                customerPersistenceMapper.toDocument(customer);
 
-        return customerMongoRepository.save(document)
+        CustomerDocument customerDocument = customerPersistenceMapper.toDocument(customer);
+        Mono<CustomerDocument> result = customerMongoRepository.save(customerDocument);
+
+        return result
                 .map(customerPersistenceMapper::toDomain);
     }
 
     @Override
-    public Mono<Customer> findById(CustomerId customerId) {
-        return customerMongoRepository.findById(customerId)
+    public Mono<Customer> findById(CustomerId id) {
+        return customerMongoRepository.findById(id)
                 .map(customerPersistenceMapper::toDomain);
     }
 
@@ -46,8 +47,8 @@ public class CustomerReactiveRepositoryAdapter implements CustomerRepository {
     }
 
     @Override
-    public Mono<Void> deleteById(CustomerId customerId) {
-        return customerMongoRepository.deleteById(customerId);
+    public Mono<Void> deleteById(CustomerId id) {
+        return customerMongoRepository.deleteById(id);
     }
 
     @Override
@@ -64,6 +65,7 @@ public class CustomerReactiveRepositoryAdapter implements CustomerRepository {
                 Criteria.where("username").is("lyta")
                         .and("familyName").is("Pho")
         );
+//        Aggregation
         return reactiveMongoTemplate.find(query, CustomerDocument.class)
                 .map(customerPersistenceMapper::toDomain);
     }
