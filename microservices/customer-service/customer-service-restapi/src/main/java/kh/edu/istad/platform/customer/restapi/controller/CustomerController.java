@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import kh.edu.istad.platform.customer.domain.dto.InitiateCustomerResult;
 import kh.edu.istad.platform.customer.domain.entity.Customer;
 import kh.edu.istad.platform.customer.domain.usecase.*;
+import kh.edu.istad.platform.customer.domain.valueobject.CustomerStatus;
 import kh.edu.istad.platform.customer.restapi.dto.CreateCustomerRequest;
 import kh.edu.istad.platform.customer.restapi.dto.CustomerInitiateRequest;
 import kh.edu.istad.platform.customer.restapi.dto.CustomerInitiateResponse;
@@ -48,8 +49,12 @@ public class CustomerController {
 //    }
 
     @GetMapping ("/query")
-    public Flux<Customer> query() {
-        return queryCustomerUseCase.findAll();
+    public Flux<Customer> query(
+            @RequestParam(name = "username", required = false) String username,
+            @RequestParam(name = "email", required = false) String email,
+            @RequestParam(name = "status", required = false) CustomerStatus status
+    ) {
+        return queryCustomerUseCase.query(username, email, status);
     }
 
     @GetMapping

@@ -15,10 +15,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Document (collection = "customerDocument")
-public class CustomerDocument implements Persistable<String> {
+public class CustomerDocument {
 
     @Id
-    private String id;
+    private UUID id;
 
     private String username;
     private String familyName;
@@ -39,8 +39,8 @@ public class CustomerDocument implements Persistable<String> {
     @LastModifiedDate
     private String modifiedAt;
 
-    @Override
-    public boolean isNew() {
-        return createdAt == null;
-    }
+//    @Override
+//    public boolean isNew() {
+//        return createdAt == null;
+//    }
 }

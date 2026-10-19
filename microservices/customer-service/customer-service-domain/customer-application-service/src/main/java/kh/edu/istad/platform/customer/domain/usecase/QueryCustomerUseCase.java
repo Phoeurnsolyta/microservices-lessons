@@ -2,6 +2,7 @@ package kh.edu.istad.platform.customer.domain.usecase;
 
 import kh.edu.istad.platform.customer.domain.entity.Customer;
 import kh.edu.istad.platform.customer.domain.port.out.CustomerRepository;
+import kh.edu.istad.platform.customer.domain.valueobject.CustomerStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -16,7 +17,11 @@ public class QueryCustomerUseCase {
         return customerRepository.findAll();
     }
 
-    public Flux<Customer> query() {
-        return customerRepository.query();
+    public Flux<Customer> query(
+            String username,
+            String email,
+            CustomerStatus status
+    ) {
+        return customerRepository.query(username,email,status);
     }
 }

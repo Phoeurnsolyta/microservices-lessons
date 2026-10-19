@@ -6,7 +6,9 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 
-public interface CustomerMongoRepository extends ReactiveMongoRepository<CustomerDocument, CustomerId> {
+import java.util.UUID;
+
+public interface CustomerMongoRepository extends ReactiveMongoRepository<CustomerDocument, UUID> {
 
     @Query ("{username: {$eq: ?0}}")
     Mono<CustomerDocument> findByUsername(String username);
