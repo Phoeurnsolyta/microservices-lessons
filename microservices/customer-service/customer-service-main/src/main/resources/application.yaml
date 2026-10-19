@@ -2,19 +2,11 @@ server:
   port: 1212
 
 spring:
-  application:
-    name: istad-ite-3rd-project
-
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${URL}
-    username: ${USERNAME}
-    password: ${PASSWORD}
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+  mongodb:
+    host: localhost
+    port: 2026
+    username: mongod
+    password: mongod
+    database: db_customer
+    authentication-database: admin
+    uuid-representation: standard

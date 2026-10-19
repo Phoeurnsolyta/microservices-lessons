@@ -19,15 +19,15 @@ public class UpdateCustomerUseCase {
     private final CustomerDomainService customerDomainService;
     private final CustomerRepository customerRepository;
 
-    public void execute(UUID customerId, String familyName, String givenName) {
-        log.info("update customer usecase: {}", customerId);
-
-        Customer customer = customerRepository.findById(new CustomerId(customerId))
-                .orElseThrow(() -> new CustomerDomainException(
-                        "Customer id not found: " + customerId));
-
-        customerDomainService.updateCustomer(customer, familyName, givenName);
-        customerRepository.save(customer);
-    }
+//    public void execute(UUID customerId, String familyName, String givenName) {
+//        log.info("update customer usecase: {}", customerId);
+//
+//        Customer customer = customerRepository.findById(new CustomerId(customerId))
+//                .orElseThrow(() -> new CustomerDomainException(
+//                        "Customer id not found: " + customerId));
+//
+//        customerDomainService.updateCustomer(customer, familyName, givenName);
+//        customerRepository.save(customer);
+//    }
 
 }

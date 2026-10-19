@@ -10,6 +10,7 @@ import kh.edu.istad.platform.customer.domain.valueobject.PhoneNumber;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 
 @Component
@@ -20,9 +21,28 @@ public class InitiateCustomerUseCase {
     private final CustomerDomainService customerDomainService;
     private final CustomerRepository customerRepository;
 
-    public InitiateCustomerResult execute(InitiateCustomerCommand command) {
+//    public InitiateCustomerResult execute(InitiateCustomerCommand command) {
+//        log.info("initiate customer usecase: {}", command);
+//        // validate by load data from persistence (output port)
+//        Customer customer = Customer.builder()
+//                .username(command.username())
+//                .familyName(command.familyName())
+//                .givenName(command.givenName())
+//                .email(new Email(command.email()))
+//                .phoneNumber(new PhoneNumber(command.phoneNumber()))
+//                .build();
+//        // invoke domain logic (called domain service)
+//        customerDomainService.initiateCustomer(customer);
+//        // save data into database (output port)
+//        Customer savedCustomer = customerRepository.save(customer);
+//        return new InitiateCustomerResult(savedCustomer.getId().value());
+//    }
+
+    public Mono<InitiateCustomerResult> execute(
+            InitiateCustomerCommand command
+    ) {
         log.info("initiate customer usecase: {}", command);
-        // validate by load data from persistence (output port)
+
         Customer customer = Customer.builder()
                 .username(command.username())
                 .familyName(command.familyName())
@@ -30,10 +50,12 @@ public class InitiateCustomerUseCase {
                 .email(new Email(command.email()))
                 .phoneNumber(new PhoneNumber(command.phoneNumber()))
                 .build();
-        // invoke domain logic (called domain service)
+
         customerDomainService.initiateCustomer(customer);
-        // save data into database (output port)
-        Customer savedCustomer = customerRepository.save(customer);
-        return new InitiateCustomerResult(savedCustomer.getId().value());
+
+        return customerRepository.save(customer)
+                .map(savedCustomer ->
+                        new InitiateCustomerResult(savedCustomer.getId().value())
+                );
     }
 }

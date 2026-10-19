@@ -19,15 +19,15 @@ public class DeactivateCustomerUseCase {
     private final CustomerDomainService customerDomainService;
     private final CustomerRepository customerRepository;
 
-    public void execute(UUID customerId) {
-        log.info("deactivate customer usecase: {}", customerId);
-
-        Customer customer = customerRepository.findById(new CustomerId(customerId))
-                .orElseThrow(() -> new CustomerDomainException(
-                        "Customer not found: " + customerId));
-
-        customerDomainService.deactivateCustomer(customer);
-
-        customerRepository.save(customer);
-    }
+//    public void execute(UUID customerId) {
+//        log.info("deactivate customer usecase: {}", customerId);
+//
+//        Customer customer = customerRepository.findById(new CustomerId(customerId))
+//                .orElseThrow(() -> new CustomerDomainException(
+//                        "Customer not found: " + customerId));
+//
+//        customerDomainService.deactivateCustomer(customer);
+//
+//        customerRepository.save(customer);
+//    }
 }
