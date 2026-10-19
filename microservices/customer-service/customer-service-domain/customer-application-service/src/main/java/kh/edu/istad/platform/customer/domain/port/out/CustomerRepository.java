@@ -14,4 +14,10 @@ public interface CustomerRepository {
     Mono<Customer> findById(CustomerId customerId);
 
     Flux<Customer> findAll();
+
+    Mono<Void> deleteById(CustomerId customerId);
+
+    Mono<Customer> findByUsername(String username);
+
+    Flux<Customer> query();
 }
