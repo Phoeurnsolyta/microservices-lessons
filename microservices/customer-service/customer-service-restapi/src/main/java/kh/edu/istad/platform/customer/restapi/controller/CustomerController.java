@@ -29,12 +29,37 @@ public class CustomerController {
     private final CustomerWebMapper customerWebMapper;
     private final CreateCustomerUseCase  createCustomerUseCase;
     private final QueryCustomerUseCase queryCustomerUseCase;
+    private final GetCustomerByIdUseCase getCustomerByIdUseCase;
+    private final DeleteCustomerUseCase deleteCustomerUseCase;
 
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Customer> create (@RequestBody CreateCustomerRequest request) {
         return createCustomerUseCase.create(customerWebMapper.toDomain(request));
+    }
+
+    @GetMapping("/{id}")
+    public Mono<Customer> findById(@PathVariable("id") UUID id) {
+        return getCustomerByIdUseCase.execute(id);
+    }
+
+    @PutMapping("/{id}")
+    public Mono<Customer> updateCustomer(
+            @PathVariable("id") UUID id,
+            @Valid @RequestBody CustomerUpdateRequest request
+    ) {
+        return updateCustomerUseCase.execute(
+                id,
+                request.familyName(),
+                request.givenName()
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> deleteCustomer(@PathVariable("id") UUID id) {
+        return deleteCustomerUseCase.execute(id);
     }
 
 

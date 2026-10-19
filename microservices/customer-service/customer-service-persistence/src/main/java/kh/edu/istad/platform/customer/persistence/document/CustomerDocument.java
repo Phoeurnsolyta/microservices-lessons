@@ -39,6 +39,8 @@ public class CustomerDocument {
     @LastModifiedDate
     private String modifiedAt;
 
+    private UUID segmentId;
+
 //    @Override
 //    public boolean isNew() {
 //        return createdAt == null;
