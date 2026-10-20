@@ -72,6 +72,12 @@
                   <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-restapi" />
                 </projects>
               </build>
+              <build path="$PROJECT_DIR$/microservices/reactive-lesson" name="reactive-lesson">
+                <projects>
+                  <project path="$PROJECT_DIR$/microservices/reactive-lesson" />
+                  <project path="$PROJECT_DIR$/microservices/reactive-lesson/reactive-lesson-main" />
+                </projects>
+              </build>
             </builds>
           </compositeBuild>
         </compositeConfiguration>
@@ -117,6 +123,8 @@
             <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-message" />
             <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-persistence" />
             <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-restapi" />
+            <option value="$PROJECT_DIR$/microservices/reactive-lesson" />
+            <option value="$PROJECT_DIR$/microservices/reactive-lesson/reactive-lesson-main" />
           </set>
         </option>
       </GradleProjectSettings>

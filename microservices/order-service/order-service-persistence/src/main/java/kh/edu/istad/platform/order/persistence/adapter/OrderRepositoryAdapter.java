@@ -1,6 +1,6 @@
 package kh.edu.istad.platform.order.persistence.adapter;
 
-import jakarta.transaction.Transactional;
+//import jakarta.transaction.Transactional;
 import kh.edu.istad.common.domain.valueobject.CustomerId;
 import kh.edu.istad.common.domain.valueobject.OrderId;
 import kh.edu.istad.platform.order.domain.entity.Order;
@@ -27,7 +27,7 @@ public class OrderRepositoryAdapter implements OrderRepository {
     private final OrderItemJpaRepository orderItemJpaRepository;
 
     @Override
-    @Transactional
+//    @Transactional
     public Order save(Order order) {
         OrderEntity orderEntity = new OrderEntity();
 
