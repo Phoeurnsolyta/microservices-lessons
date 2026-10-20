@@ -1,9 +1,11 @@
 package kh.edu.istad.platform.customer.domain.dto;
 
-import kh.edu.istad.platform.customer.domain.valueobject.CustomerStatus;
+import kh.edu.istad.platform.customer.domain.valueobject.CustomerStatusStatistic;
+
+import java.util.List;
 
 public record CustomerStatisticResult (
-        CustomerStatus status,
-        long total
+        long totalCustomers,
+        List<CustomerStatusStatistic> statistic
 ){
 }

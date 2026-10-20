@@ -89,7 +89,7 @@ public class CustomerController {
     }
 
     @GetMapping("/statistic")
-    public Flux<CustomerStatisticResult> getCustomerStatistics() {
+    public Mono<CustomerStatisticResult> getCustomerStatistics() {
         return customerStatisticUseCase.execute();
     }
 

@@ -5,6 +5,7 @@ import kh.edu.istad.platform.customer.domain.dto.CustomerStatisticResult;
 import kh.edu.istad.platform.customer.domain.entity.Customer;
 import kh.edu.istad.platform.customer.domain.port.out.CustomerRepository;
 import kh.edu.istad.platform.customer.domain.valueobject.CustomerStatus;
+import kh.edu.istad.platform.customer.domain.valueobject.CustomerStatusStatistic;
 import kh.edu.istad.platform.customer.persistence.document.CustomerDocument;
 import kh.edu.istad.platform.customer.persistence.mapper.CustomerPersistenceMapper;
 import kh.edu.istad.platform.customer.persistence.repository.CustomerMongoRepository;
@@ -117,17 +118,31 @@ public class CustomerReactiveRepositoryAdapter implements CustomerRepository {
     }
 
     @Override
-    public Flux<CustomerStatisticResult> getCustomerStatistics() {
+    public Mono<CustomerStatisticResult> getCustomerStatistics() {
         Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.group("status")
+                Aggregation.group("status", "segmentId")
                         .count().as("total"),
+
                 Aggregation.project("total")
-                        .and("_id").as("status")
+                        .and("_id.status").as("status")
+                        .and("_id.segmentId").as("segmentId")
         );
-        return reactiveMongoTemplate.aggregate(
+        Mono<Long> totalCustomers = reactiveMongoTemplate.count(
+                new Query(),
+                CustomerDocument.class
+        );
+
+        Mono<List<CustomerStatusStatistic>> statistics =
+                reactiveMongoTemplate.aggregate(
                         aggregation,
                         CustomerDocument.class,
-                        CustomerStatisticResult.class
-                );
+                        CustomerStatusStatistic.class
+                ).collectList();
+
+        return Mono.zip(totalCustomers, statistics)
+                .map(result -> new CustomerStatisticResult(
+                        result.getT1(),
+                        result.getT2()
+                ));
     }
 }

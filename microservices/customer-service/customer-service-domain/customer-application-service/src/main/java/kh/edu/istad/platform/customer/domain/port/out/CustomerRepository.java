@@ -26,5 +26,5 @@ public interface CustomerRepository {
 
     Mono<Customer> assignSegmentToCustomer(UUID customerId, UUID segmentId);
 
-    Flux<CustomerStatisticResult> getCustomerStatistics();
+    Mono<CustomerStatisticResult> getCustomerStatistics();
 }
