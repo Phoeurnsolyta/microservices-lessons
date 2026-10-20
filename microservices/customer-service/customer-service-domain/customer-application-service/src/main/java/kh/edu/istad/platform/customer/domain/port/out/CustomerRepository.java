@@ -2,6 +2,7 @@ package kh.edu.istad.platform.customer.domain.port.out;
 
 
 import kh.edu.istad.common.domain.valueobject.CustomerId;
+import kh.edu.istad.platform.customer.domain.dto.CustomerStatisticResult;
 import kh.edu.istad.platform.customer.domain.entity.Customer;
 import kh.edu.istad.platform.customer.domain.valueobject.CustomerStatus;
 import reactor.core.publisher.Flux;
@@ -24,4 +25,6 @@ public interface CustomerRepository {
     Flux<Customer> query(String username, String email, CustomerStatus status);
 
     Mono<Customer> assignSegmentToCustomer(UUID customerId, UUID segmentId);
+
+    Flux<CustomerStatisticResult> getCustomerStatistics();
 }

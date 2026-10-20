@@ -1,6 +1,7 @@
 package kh.edu.istad.platform.customer.persistence.adapter;
 
 import kh.edu.istad.common.domain.valueobject.CustomerId;
+import kh.edu.istad.platform.customer.domain.dto.CustomerStatisticResult;
 import kh.edu.istad.platform.customer.domain.entity.Customer;
 import kh.edu.istad.platform.customer.domain.port.out.CustomerRepository;
 import kh.edu.istad.platform.customer.domain.valueobject.CustomerStatus;
@@ -9,6 +10,7 @@ import kh.edu.istad.platform.customer.persistence.mapper.CustomerPersistenceMapp
 import kh.edu.istad.platform.customer.persistence.repository.CustomerMongoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
@@ -112,5 +114,20 @@ public class CustomerReactiveRepositoryAdapter implements CustomerRepository {
                     return customer;
                 })
                 .flatMap(this::save);
+    }
+
+    @Override
+    public Flux<CustomerStatisticResult> getCustomerStatistics() {
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.group("status")
+                        .count().as("total"),
+                Aggregation.project("total")
+                        .and("_id").as("status")
+        );
+        return reactiveMongoTemplate.aggregate(
+                        aggregation,
+                        CustomerDocument.class,
+                        CustomerStatisticResult.class
+                );
     }
 }

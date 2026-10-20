@@ -1,6 +1,7 @@
 package kh.edu.istad.platform.customer.restapi.controller;
 
 import jakarta.validation.Valid;
+import kh.edu.istad.platform.customer.domain.dto.CustomerStatisticResult;
 import kh.edu.istad.platform.customer.domain.dto.InitiateCustomerResult;
 import kh.edu.istad.platform.customer.domain.entity.Customer;
 import kh.edu.istad.platform.customer.domain.usecase.*;
@@ -29,6 +30,7 @@ public class CustomerController {
     private final GetCustomerByIdUseCase getCustomerByIdUseCase;
     private final DeleteCustomerUseCase deleteCustomerUseCase;
     private final AssignCustomerSegmentUseCase assignCustomerSegmentUseCase;
+    private final CustomerStatisticUseCase customerStatisticUseCase;
 
 
     @PostMapping
@@ -84,6 +86,11 @@ public class CustomerController {
                 customerId,
                 request.segmentId()
         );
+    }
+
+    @GetMapping("/statistic")
+    public Flux<CustomerStatisticResult> getCustomerStatistics() {
+        return customerStatisticUseCase.execute();
     }
 
 }
