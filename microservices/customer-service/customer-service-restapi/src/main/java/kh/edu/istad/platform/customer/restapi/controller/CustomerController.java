@@ -63,15 +63,7 @@ public class CustomerController {
     }
 
 
-//    @ResponseStatus(HttpStatus.CREATED)
-//    @PostMapping
-//    public Mono<CustomerInitiateResponse> initiateCustomer(
-//            @Valid @RequestBody CustomerInitiateRequest request
-//    ) {
-//        return initiateCustomerUseCase
-//                .execute(customerWebMapper.toCommand(request))
-//                .map(customerWebMapper::toResponse);
-//    }
+
 
     @GetMapping ("/query")
     public Flux<Customer> query(
