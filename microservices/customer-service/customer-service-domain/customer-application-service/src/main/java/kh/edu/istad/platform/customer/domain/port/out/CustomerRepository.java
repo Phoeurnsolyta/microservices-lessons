@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface CustomerRepository {
     Mono <Customer> save(Customer customer);
@@ -21,4 +22,6 @@ public interface CustomerRepository {
     Mono<Customer> findByUsername(String username);
 
     Flux<Customer> query(String username, String email, CustomerStatus status);
+
+    Mono<Customer> assignSegmentToCustomer(UUID customerId, UUID segmentId);
 }

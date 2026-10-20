@@ -50,6 +50,10 @@ public class Customer extends AggregateRoot<CustomerId> {
         status = CustomerStatus.INACTIVE;
     }
 
+    public void assignSegment(UUID segmentId) {
+        this.segmentId = segmentId;
+    }
+
 
     public String getUsername() {
         return username;

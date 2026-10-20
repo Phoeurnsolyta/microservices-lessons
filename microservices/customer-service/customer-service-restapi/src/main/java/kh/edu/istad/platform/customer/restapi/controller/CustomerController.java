@@ -5,10 +5,7 @@ import kh.edu.istad.platform.customer.domain.dto.InitiateCustomerResult;
 import kh.edu.istad.platform.customer.domain.entity.Customer;
 import kh.edu.istad.platform.customer.domain.usecase.*;
 import kh.edu.istad.platform.customer.domain.valueobject.CustomerStatus;
-import kh.edu.istad.platform.customer.restapi.dto.CreateCustomerRequest;
-import kh.edu.istad.platform.customer.restapi.dto.CustomerInitiateRequest;
-import kh.edu.istad.platform.customer.restapi.dto.CustomerInitiateResponse;
-import kh.edu.istad.platform.customer.restapi.dto.CustomerUpdateRequest;
+import kh.edu.istad.platform.customer.restapi.dto.*;
 import kh.edu.istad.platform.customer.restapi.mapper.CustomerWebMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +28,7 @@ public class CustomerController {
     private final QueryCustomerUseCase queryCustomerUseCase;
     private final GetCustomerByIdUseCase getCustomerByIdUseCase;
     private final DeleteCustomerUseCase deleteCustomerUseCase;
+    private final AssignCustomerSegmentUseCase assignCustomerSegmentUseCase;
 
 
     @PostMapping
@@ -77,34 +75,15 @@ public class CustomerController {
         return queryCustomerUseCase.findAll();
     }
 
-//    @ResponseStatus(HttpStatus.CREATED)
-//    @PostMapping
-//    public CustomerInitiateResponse initiateCustomer(
-//            @RequestBody CustomerInitiateRequest customerInitiateRequest
-//    ) {
-//
-//        InitiateCustomerResult result = initiateCustomerUseCase.execute(
-//                customerWebMapper.toCommand(customerInitiateRequest)
-//        );
-//        return customerWebMapper.toResponse(result);
-//    }
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    @PutMapping("/{id}")
-//    public void updateCustomer(
-//            @PathVariable("id") UUID customerId,
-//            @Valid @RequestBody CustomerUpdateRequest customerUpdateRequest
-//    ) {
-//        updateCustomerUseCase.execute(
-//                customerId,
-//                customerUpdateRequest.familyName(),
-//                customerUpdateRequest.givenName()
-//        );
-//    }
-//
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    @PatchMapping("/{id}/deactivate")
-//    public void deactivateCustomer(
-//            @PathVariable ("id") UUID customerId) {
-//        deactivateCustomerUseCase.execute(customerId);
-//    }
+    @PutMapping("/{customerId}/segment")
+    public Mono<Customer> assignSegmentToCustomer(
+            @PathVariable("customerId") UUID customerId,
+            @RequestBody AssignCustomerSegmentRequest request
+    ) {
+        return assignCustomerSegmentUseCase.execute(
+                customerId,
+                request.segmentId()
+        );
+    }
+
 }

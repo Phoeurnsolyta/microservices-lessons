@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 
@@ -100,5 +101,16 @@ public class CustomerReactiveRepositoryAdapter implements CustomerRepository {
 //        Aggregation
         return reactiveMongoTemplate.find(query, CustomerDocument.class)
                 .map(customerPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public Mono<Customer> assignSegmentToCustomer(UUID customerId, UUID segmentId) {
+        return customerMongoRepository.findById(customerId)
+                .map(customerPersistenceMapper::toDomain)
+                .map(customer -> {
+                    customer.assignSegment(segmentId);
+                    return customer;
+                })
+                .flatMap(this::save);
     }
 }
