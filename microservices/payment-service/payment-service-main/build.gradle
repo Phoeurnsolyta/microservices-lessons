@@ -2,6 +2,10 @@ plugins {
     id 'spring-boot-common-conventions'
 }
 
+ext {
+    set('springCloudVersion', "2025.1.4")
+}
+
 dependencies {
     implementation 'kh.edu.istad:payment-domain-core'
     implementation 'kh.edu.istad:payment-application-service'
@@ -10,5 +14,12 @@ dependencies {
     implementation 'kh.edu.istad:payment-service-restapi'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+}
 
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }

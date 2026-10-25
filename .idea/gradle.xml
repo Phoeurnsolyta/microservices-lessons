@@ -48,6 +48,12 @@
                   <project path="$PROJECT_DIR$/microservices/customer-service/customer-service-restapi" />
                 </projects>
               </build>
+              <build path="$PROJECT_DIR$/microservices/eureka-service" name="eureka-service">
+                <projects>
+                  <project path="$PROJECT_DIR$/microservices/eureka-service" />
+                  <project path="$PROJECT_DIR$/microservices/eureka-service/eureka-service-main" />
+                </projects>
+              </build>
               <build path="$PROJECT_DIR$/microservices/order-service" name="order-service">
                 <projects>
                   <project path="$PROJECT_DIR$/microservices/order-service" />
@@ -101,6 +107,8 @@
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-message" />
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-persistence" />
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-restapi" />
+            <option value="$PROJECT_DIR$/microservices/eureka-service" />
+            <option value="$PROJECT_DIR$/microservices/eureka-service/eureka-service-main" />
             <option value="$PROJECT_DIR$/microservices/order-service" />
             <option value="$PROJECT_DIR$/microservices/order-service/order-service-domain" />
             <option value="$PROJECT_DIR$/microservices/order-service/order-service-domain/order-application-service" />
