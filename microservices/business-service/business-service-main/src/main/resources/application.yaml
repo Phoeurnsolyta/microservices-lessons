@@ -1,7 +1,9 @@
 server:
-  port: 7777
+  port: 8082
 
 spring:
+  application:
+    name: business-service
   mongodb:
     host: localhost
     port: 2026

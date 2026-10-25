@@ -1,9 +1,9 @@
 server:
-  port: 6767
+  port: 8083
 
 spring:
   application:
-    name: istad-ite-3rd-project-order-service
+    name: order-service
 
   datasource:
     url: ${URL}

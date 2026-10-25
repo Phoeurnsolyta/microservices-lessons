@@ -1,9 +1,9 @@
 server:
-  port: 1343
+  port: 8084
 
 spring:
   application:
-    name: istad-ite-3rd-project-payment-service
+    name: payment-service
 
   datasource:
     url: ${URL}
