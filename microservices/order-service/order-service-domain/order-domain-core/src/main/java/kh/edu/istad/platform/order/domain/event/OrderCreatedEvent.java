@@ -5,22 +5,9 @@ import kh.edu.istad.platform.order.domain.entity.Order;
 
 import java.time.ZonedDateTime;
 
-public class OrderCreatedEvent implements DomainEvent<Order> {
-
-    private final Order order;
-    private final ZonedDateTime createdAt;
-
-    public OrderCreatedEvent(Order order, ZonedDateTime createdAt) {
-        this.order = order;
-        this.createdAt = createdAt;
-    }
-
-    public Order getOrder() {
-        return order;
-    }
-
-    public ZonedDateTime getCreatedAt() {
-        return createdAt;
-    }
+public record OrderCreatedEvent (
+        Order order,
+        ZonedDateTime createdAt
+)implements DomainEvent<Order> {
 
 }

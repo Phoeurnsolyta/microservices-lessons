@@ -2,207 +2,134 @@
 package kh.edu.istad.platform.order.domain.entity;
 
 import kh.edu.istad.common.domain.entity.AggregateRoot;
-import kh.edu.istad.common.domain.event.DomainEvent;
 import kh.edu.istad.common.domain.valueobject.CustomerId;
+import kh.edu.istad.common.domain.valueobject.Money;
 import kh.edu.istad.common.domain.valueobject.OrderId;
-import kh.edu.istad.platform.order.domain.event.OrderCancelledEvent;
-import kh.edu.istad.platform.order.domain.event.OrderCreatedEvent;
-import kh.edu.istad.platform.order.domain.event.OrderPaidEvent;
+import kh.edu.istad.common.domain.valueobject.OrderStatus;
 import kh.edu.istad.platform.order.domain.exception.OrderDomainException;
 import kh.edu.istad.platform.order.domain.valueobject.BusinessId;
-import kh.edu.istad.platform.order.domain.valueobject.Money;
-import kh.edu.istad.platform.order.domain.valueobject.OrderStatus;
+
+
 import kh.edu.istad.platform.order.domain.valueobject.StreetAddress;
 import kh.edu.istad.platform.order.domain.valueobject.TrackingId;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Order extends AggregateRoot<OrderId> {
 
-    private CustomerId customerId;
-    private BusinessId businessId;
-    private StreetAddress deliveryAddress;
-    private Money price;
-    private List<OrderItem> items;
+    private final CustomerId customerId;
+    private final BusinessId businessId;
+    private final StreetAddress deliveryAddress;
+    private final Money price;
+    private final List<OrderItem> items;
+
     private TrackingId trackingId;
     private OrderStatus orderStatus;
-    private ZonedDateTime createdAt;
     private List<String> failureMessages;
+    private Long version;
 
-    private final List<DomainEvent<Order>> domainEvents = new ArrayList<>();
+//    ---- start domain login---
+    public void initializeOrder () {
+
+        if (super.getId() == null || orderStatus != null) {
+            throw new OrderDomainException("Order has already been initialized");
+        }
+
+        super.setId(new OrderId(UUID.randomUUID()));
+        trackingId = new TrackingId(UUID.randomUUID());
+        orderStatus = OrderStatus.PENDING;
+        validateOrder();
+    }
+
+//    pay order
+    public void pay() {
+        if (orderStatus != OrderStatus.PENDING) {
+            throw new OrderDomainException("Order state is not correct for pay operation");
+        }
+
+        orderStatus = OrderStatus.PAID;
+    }
+
+//    approve order
+
+    public void approve() {
+        if (orderStatus != OrderStatus.PAID) {
+            throw new OrderDomainException("Order state is not correct for approve operation");
+        }
+        orderStatus = OrderStatus.APPROVED;
+    }
+
+//    init cancel order
+    public void initCancel(List<String> failureMessages) {
+        if (orderStatus != OrderStatus.PAID) {
+            throw new OrderDomainException("Order state is not correct for init cancel operation");
+        }
+        orderStatus = OrderStatus.CANCELLING;
+        updateFailureMessages(failureMessages);
+    }
+
+//    cancel order
+    public void cancel() {
+        if (orderStatus == OrderStatus.PENDING || orderStatus == OrderStatus.CANCELLING) {
+            throw new OrderDomainException("Order state is not correct for cancel operation");
+        }
+        orderStatus = OrderStatus.CANCELLED;
+    }
+
+    private void updateFailureMessages(List<String> failureMessages) {
+        if (this.failureMessages != null && failureMessages != null) {
+            this.failureMessages.addAll(failureMessages.stream().filter(
+                    message -> message.isBlank()
+            ).toList());
+        }else  {
+            this.failureMessages = failureMessages;
+        }
+    }
+
+//validateOrder
+    public void validateOrder() {
+
+        if (price == null || price.amount() == null || price.amount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new OrderDomainException("Total price must be greater than zero!");
+        }
+
+//        validate product price
+        Money orderSubTotal = items.stream()
+                .map(orderItem -> {
+                    validateItemPrice(orderItem);
+                    return orderItem.getSubTotal();
+                })
+                .reduce(Money.ZERO, Money::add);
+
+        if (!price.equals(orderSubTotal)) {
+            throw new OrderDomainException("Price is not equal to order sub total");
+        }
+    }
+
+    private void validateItemPrice (OrderItem orderItem) {
+        if (!orderItem.getPrice().equals(orderItem.getProduct().getPrice())) {
+            throw new OrderDomainException("Product must be equal to product price");
+        }
+    }
 
     private Order(Builder builder) {
-        setId(builder.id);
-
+        super.setId(builder.id);
         customerId = builder.customerId;
         businessId = builder.businessId;
         deliveryAddress = builder.deliveryAddress;
         price = builder.price;
-        items = builder.items != null
-                ? new ArrayList<>(builder.items)
-                : new ArrayList<>();
+        items = builder.items;
         trackingId = builder.trackingId;
         orderStatus = builder.orderStatus;
-        createdAt = builder.createdAt;
-        failureMessages = builder.failureMessages != null
-                ? new ArrayList<>(builder.failureMessages)
-                : new ArrayList<>();
-
-        validateOrder();
+        failureMessages = builder.failureMessages;
+        version = builder.version;
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public List<DomainEvent<Order>> getDomainEvents() {
-        return List.copyOf(domainEvents);
-    }
-
-    public void clearDomainEvents() {
-        domainEvents.clear();
-    }
-
-    public void validateOrder() {
-        if (getId() == null) {
-            throw new OrderDomainException("Order ID cannot be null");
-        }
-        if (customerId == null) {
-            throw new OrderDomainException("Customer ID cannot be null");
-        }
-        if (businessId == null) {
-            throw new OrderDomainException("Business ID cannot be null");
-        }
-        if (deliveryAddress == null) {
-            throw new OrderDomainException("Delivery address cannot be null");
-        }
-        if (items == null || items.isEmpty()) {
-            throw new OrderDomainException(
-                    "Order must contain at least one item"
-            );
-        }
-        if (price == null) {
-            throw new OrderDomainException("Order price cannot be null");
-        }
-
-        BigDecimal itemsTotal = items.stream()
-                .map(OrderItem::getSubTotal)
-                .map(Money::amount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        if (price.amount().compareTo(itemsTotal) != 0) {
-            throw new OrderDomainException(
-                    "Order price must equal the sum of item subtotals"
-            );
-        }
-    }
-
-    public OrderCreatedEvent initializeOrder() {
-        if (orderStatus != null) {
-            throw new OrderDomainException(
-                    "Order has already been initialized"
-            );
-        }
-
-        orderStatus = OrderStatus.PENDING;
-        trackingId = TrackingId.generate();
-        createdAt = ZonedDateTime.now();
-        failureMessages.clear();
-
-        OrderCreatedEvent event = new OrderCreatedEvent(this, createdAt);
-        domainEvents.add(event);
-
-        return event;
-    }
-
-    public void pay() {
-        if (orderStatus != OrderStatus.PENDING) {
-            throw new OrderDomainException(
-                    "Only pending orders can be paid"
-            );
-        }
-
-        orderStatus = OrderStatus.PAID;
-        domainEvents.add(
-                new OrderPaidEvent(this, ZonedDateTime.now())
-        );
-    }
-
-    public void approve() {
-        if (orderStatus != OrderStatus.PAID) {
-            throw new OrderDomainException(
-                    "Only paid orders can be approved"
-            );
-        }
-
-        orderStatus = OrderStatus.APPROVED;
-    }
-
-    public void initCancel() {
-        if (orderStatus != OrderStatus.PENDING
-                && orderStatus != OrderStatus.PAID) {
-            throw new OrderDomainException(
-                    "Only pending or paid orders can begin cancellation"
-            );
-        }
-
-        orderStatus = OrderStatus.CANCELLING;
-    }
-
-    public void cancel() {
-        if (orderStatus != OrderStatus.CANCELLING) {
-            throw new OrderDomainException(
-                    "Order must be cancelling before it can be cancelled"
-            );
-        }
-
-        orderStatus = OrderStatus.CANCELLED;
-        domainEvents.add(
-                new OrderCancelledEvent(this, ZonedDateTime.now())
-        );
-    }
-
-    public CustomerId getCustomerId() {
-        return customerId;
-    }
-
-    public BusinessId getBusinessId() {
-        return businessId;
-    }
-
-    public StreetAddress getDeliveryAddress() {
-        return deliveryAddress;
-    }
-
-    public Money getPrice() {
-        return price;
-    }
-
-    public List<OrderItem> getItems() {
-        return List.copyOf(items);
-    }
-
-    public TrackingId getTrackingId() {
-        return trackingId;
-    }
-
-    public OrderStatus getOrderStatus() {
-        return orderStatus;
-    }
-
-    public ZonedDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public List<String> getFailureMessages() {
-        return List.copyOf(failureMessages);
-    }
 
     public static final class Builder {
-
         private OrderId id;
         private CustomerId customerId;
         private BusinessId businessId;
@@ -211,10 +138,14 @@ public class Order extends AggregateRoot<OrderId> {
         private List<OrderItem> items;
         private TrackingId trackingId;
         private OrderStatus orderStatus;
-        private ZonedDateTime createdAt;
         private List<String> failureMessages;
+        private Long version;
 
         private Builder() {
+        }
+
+        public static Builder builder() {
+            return new Builder();
         }
 
         public Builder id(OrderId val) {
@@ -257,13 +188,13 @@ public class Order extends AggregateRoot<OrderId> {
             return this;
         }
 
-        public Builder createdAt(ZonedDateTime val) {
-            createdAt = val;
+        public Builder failureMessages(List<String> val) {
+            failureMessages = val;
             return this;
         }
 
-        public Builder failureMessages(List<String> val) {
-            failureMessages = val;
+        public Builder version(Long val) {
+            version = val;
             return this;
         }
 
@@ -271,4 +202,6 @@ public class Order extends AggregateRoot<OrderId> {
             return new Order(this);
         }
     }
+
+
 }
