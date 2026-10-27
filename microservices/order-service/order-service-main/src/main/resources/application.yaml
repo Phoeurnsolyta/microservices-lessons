@@ -1,30 +1,36 @@
-server:
-  port: 8083
-
 spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:9543/db_order
+    username: iteuser
+    password: qwerqwer
+
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    url: jdbc:postgresql://localhost:9543/db_order
+    user: iteuser
+    password: qwerqwer
+    driver-class-name: org.postgresql.Driver
+
   application:
     name: order-service
-
-  datasource:
-    url: ${URL}
-    username: ${USERNAME}
-    password: ${PASSWORD}
-    driver-class-name: org.postgresql.Driver
+  profiles:
+    active: dev
+  config:
+    import: "optional:consul:"
+  cloud:
+    consul:
+      config:
+        enabled: true
+        format: yaml
+        watch:
+          enabled: true
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}:${random.value}
+    open-in-view: false

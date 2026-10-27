@@ -4,6 +4,13 @@ server:
 spring:
   application:
     name: customer-service
+  cloud:
+    consul:
+      discovery:
+        health-check-url: http://host.docker.internal:8081/actuator/health
+        service-name: customer-service
+        prefer-ip-address: true
+        instance-id: ${spring.application.name}:${random.value}
   mongodb:
     host: localhost
     port: 2026
@@ -13,12 +20,12 @@ spring:
     authentication-database: admin
     uuid-representation: standard
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}:${random.value}
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
+#    register-with-eureka: true
+#    fetch-registry: true
+#  instance:
+#    prefer-ip-address: true
+#    instance-id: ${spring.application.name}:${server.port}:${random.value}
