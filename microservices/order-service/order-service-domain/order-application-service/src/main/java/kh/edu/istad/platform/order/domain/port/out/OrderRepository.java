@@ -1,8 +1,9 @@
 package kh.edu.istad.platform.order.domain.port.out;
 
 import kh.edu.istad.platform.order.domain.entity.Order;
+import reactor.core.publisher.Mono;
 
 public interface OrderRepository {
 
-    Order save(Order order);
+    Mono<Order> save(Order order);
 }

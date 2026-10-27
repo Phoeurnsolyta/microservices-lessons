@@ -1,69 +1,94 @@
+
 package kh.edu.istad.platform.order.persistence.adapter;
 
-import jakarta.transaction.Transactional;
 import kh.edu.istad.common.domain.valueobject.CustomerId;
 import kh.edu.istad.common.domain.valueobject.OrderId;
 import kh.edu.istad.platform.order.domain.entity.Order;
 import kh.edu.istad.platform.order.domain.entity.OrderItem;
 import kh.edu.istad.platform.order.domain.entity.Product;
 import kh.edu.istad.platform.order.domain.port.out.OrderRepository;
-import kh.edu.istad.platform.order.domain.valueobject.*;
+import kh.edu.istad.platform.order.domain.valueobject.BusinessId;
+import kh.edu.istad.platform.order.domain.valueobject.Money;
+import kh.edu.istad.platform.order.domain.valueobject.OrderItemId;
+import kh.edu.istad.platform.order.domain.valueobject.StreetAddress;
+import kh.edu.istad.platform.order.domain.valueobject.TrackingId;
 import kh.edu.istad.platform.order.persistence.entity.OrderEntity;
 import kh.edu.istad.platform.order.persistence.entity.OrderItemEntity;
-import kh.edu.istad.platform.order.persistence.repository.OrderItemJpaRepository;
-import kh.edu.istad.platform.order.persistence.repository.OrderJpaRepository;
-import kh.edu.istad.platform.order.domain.valueobject.OrderItemId;
+import kh.edu.istad.platform.order.persistence.repository.OrderItemR2dbcRepository;
+import kh.edu.istad.platform.order.persistence.repository.OrderR2dbcRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
 public class OrderRepositoryAdapter implements OrderRepository {
 
-    private final OrderJpaRepository orderJpaRepository;
-    private final OrderItemJpaRepository orderItemJpaRepository;
+    private final OrderR2dbcRepository orderRepository;
+    private final OrderItemR2dbcRepository orderItemRepository;
 
     @Override
     @Transactional
-    public Order save(Order order) {
-        OrderEntity orderEntity = new OrderEntity();
+    public Mono<Order> save(Order order) {
+        OrderEntity entity = toEntity(order);
 
-        orderEntity.setId(order.getId().value());
-        orderEntity.setCustomerId(order.getCustomerId().value());
-        orderEntity.setBusinessId(order.getBusinessId().value());
-        orderEntity.setStreet(order.getDeliveryAddress().street());
-        orderEntity.setPostalCode(order.getDeliveryAddress().postalCode());
-        orderEntity.setCity(order.getDeliveryAddress().city());
-        orderEntity.setPrice(order.getPrice().amount());
-        orderEntity.setTrackingId(order.getTrackingId().value());
-        orderEntity.setOrderStatus(order.getOrderStatus());
-        orderEntity.setCreatedAt(order.getCreatedAt());
+        return orderRepository.save(entity)
+                .flatMap(savedOrder ->
+                        saveItems(savedOrder, order.getItems())
+                                .collectList()
+                                .map(savedItems ->
+                                        toDomain(savedOrder, savedItems)
+                                )
+                );
+    }
 
-        OrderEntity savedOrder = orderJpaRepository.save(orderEntity);
+    private Flux<OrderItemEntity> saveItems(
+            OrderEntity savedOrder,
+            List<OrderItem> items
+    ) {
+        List<OrderItemEntity> entities = items.stream()
+                .map(item -> {
+                    OrderItemEntity entity = new OrderItemEntity();
+                    entity.setId(item.getId().value());
+                    entity.setOrderId(savedOrder.getId());
+                    entity.setProductId(item.getProduct().productId());
+                    entity.setProductName(item.getProduct().name());
+                    entity.setQuantity(item.getQuantity());
+                    entity.setPrice(item.getPrice().amount());
+                    entity.setSubTotal(item.getSubTotal().amount());
+                    return entity;
+                })
+                .toList();
 
-        List<OrderItemEntity> itemEntities = new ArrayList<>();
+        return orderItemRepository.saveAll(entities);
+    }
 
-        for (OrderItem item : order.getItems()) {
-            OrderItemEntity itemEntity = new OrderItemEntity();
+    private OrderEntity toEntity(Order order) {
+        OrderEntity entity = new OrderEntity();
 
-            itemEntity.setId(item.getId().value());
-            itemEntity.setOrderId(savedOrder.getId());
-            itemEntity.setProductId(item.getProduct().productId());
-            itemEntity.setProductName(item.getProduct().name());
-            itemEntity.setQuantity(item.getQuantity());
-            itemEntity.setPrice(item.getPrice().amount());
-            itemEntity.setSubTotal(item.getSubTotal().amount());
+        entity.setId(order.getId().value());
+        entity.setCustomerId(order.getCustomerId().value());
+        entity.setBusinessId(order.getBusinessId().value());
+        entity.setStreet(order.getDeliveryAddress().street());
+        entity.setPostalCode(order.getDeliveryAddress().postalCode());
+        entity.setCity(order.getDeliveryAddress().city());
+        entity.setPrice(order.getPrice().amount());
+        entity.setTrackingId(order.getTrackingId().value());
+        entity.setOrderStatus(order.getOrderStatus());
+        entity.setCreatedAt(order.getCreatedAt());
 
-            itemEntities.add(itemEntity);
-        }
+        return entity;
+    }
 
-        List<OrderItemEntity> savedItems =
-                orderItemJpaRepository.saveAll(itemEntities);
-
-        List<OrderItem> domainItems = savedItems.stream()
+    private Order toDomain(
+            OrderEntity entity,
+            List<OrderItemEntity> itemEntities
+    ) {
+        List<OrderItem> items = itemEntities.stream()
                 .map(item -> OrderItem.builder()
                         .id(new OrderItemId(item.getId()))
                         .orderId(new OrderId(item.getOrderId()))
@@ -77,19 +102,19 @@ public class OrderRepositoryAdapter implements OrderRepository {
                 .toList();
 
         return Order.builder()
-                .id(new OrderId(savedOrder.getId()))
-                .customerId(new CustomerId(savedOrder.getCustomerId()))
-                .businessId(new BusinessId(savedOrder.getBusinessId()))
+                .id(new OrderId(entity.getId()))
+                .customerId(new CustomerId(entity.getCustomerId()))
+                .businessId(new BusinessId(entity.getBusinessId()))
                 .deliveryAddress(new StreetAddress(
-                        savedOrder.getStreet(),
-                        savedOrder.getPostalCode(),
-                        savedOrder.getCity()
+                        entity.getStreet(),
+                        entity.getPostalCode(),
+                        entity.getCity()
                 ))
-                .price(new Money(savedOrder.getPrice()))
-                .items(domainItems)
-                .trackingId(new TrackingId(savedOrder.getTrackingId()))
-                .orderStatus(savedOrder.getOrderStatus())
-                .createdAt(savedOrder.getCreatedAt())
+                .price(new Money(entity.getPrice()))
+                .items(items)
+                .trackingId(new TrackingId(entity.getTrackingId()))
+                .orderStatus(entity.getOrderStatus())
+                .createdAt(entity.getCreatedAt())
                 .build();
     }
 }

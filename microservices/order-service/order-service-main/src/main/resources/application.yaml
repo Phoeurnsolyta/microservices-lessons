@@ -1,4 +1,7 @@
+
 spring:
+  application:
+    name: order-service
   r2dbc:
     url: r2dbc:postgresql://localhost:9543/db_order
     username: iteuser
@@ -12,25 +15,19 @@ spring:
     password: qwerqwer
     driver-class-name: org.postgresql.Driver
 
-  application:
-    name: order-service
   profiles:
     active: dev
   config:
     import: "optional:consul:"
   cloud:
     consul:
+      discovery:
+        health-check-url: http://host.docker.internal:${server.port}/actuator/health
+        prefer-ip-address: true
+        service-name: order-service
+        instance-id: ${spring.application.name}-${random.value}
       config:
         enabled: true
         format: yaml
         watch:
           enabled: true
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-    open-in-view: false

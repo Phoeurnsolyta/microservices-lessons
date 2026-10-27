@@ -1,10 +1,12 @@
 package kh.edu.istad.platform.order.persistence.entity;
 
-import jakarta.persistence.*;
 import kh.edu.istad.platform.order.domain.valueobject.OrderStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -13,37 +15,35 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-@Entity
-@Table(name = "orders")
+@Table("orders")
 public class OrderEntity {
     @Id
     private UUID id;
 
-    @Column(nullable = false)
+    @Column("customer_id")
     private UUID customerId;
 
-    @Column(nullable = false)
+    @Column("business_id")
     private UUID businessId;
 
-    @Column(nullable = false)
+    @Column("street")
     private String street;
 
-    @Column(nullable = false)
+    @Column("postal_code")
     private String postalCode;
 
-    @Column(nullable = false)
+    @Column("city")
     private String city;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column("price")
     private BigDecimal price;
 
-    @Column(nullable = false)
+    @Column("tracking_id")
     private UUID trackingId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column("order_status")
     private OrderStatus orderStatus;
 
-    @Column(nullable = false)
+    @Column("created_at")
     private ZonedDateTime createdAt;
 }

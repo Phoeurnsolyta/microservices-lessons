@@ -1,12 +1,11 @@
 package kh.edu.istad.platform.order.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -14,28 +13,27 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-@Entity
-@Table(name = "order_items")
+@Table("order_items")
 public class OrderItemEntity {
 
     @Id
     private UUID id;
 
-    @Column(nullable = false)
+    @Column("order_id")
     private UUID orderId;
 
-    @Column(nullable = false)
+    @Column("product_id")
     private UUID productId;
 
-    @Column(nullable = false)
+    @Column("product_name")
     private String productName;
 
-    @Column(nullable = false)
+    @Column("quantity")
     private Integer quantity;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column("price")
     private BigDecimal price;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column("sub_total")
     private BigDecimal subTotal;
 }

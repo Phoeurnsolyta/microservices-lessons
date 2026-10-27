@@ -11,12 +11,12 @@ dependencies {
     implementation 'kh.edu.istad:order-service-restapi'
     implementation 'kh.edu.istad:order-service-client'
 
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.cloud:spring-cloud-starter-consul-config'
     implementation 'org.springframework.boot:spring-boot-starter-liquibase'
     implementation 'org.liquibase:liquibase-core'
+
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.postgresql:r2dbc-postgresql'
 
