@@ -7,15 +7,11 @@ import kh.edu.istad.platform.order.domain.entity.Order;
 import kh.edu.istad.platform.order.domain.entity.OrderItem;
 import kh.edu.istad.platform.order.domain.entity.Product;
 import kh.edu.istad.platform.order.domain.port.out.OrderRepository;
-import kh.edu.istad.platform.order.domain.valueobject.BusinessId;
-import kh.edu.istad.platform.order.domain.valueobject.Money;
-import kh.edu.istad.platform.order.domain.valueobject.OrderItemId;
-import kh.edu.istad.platform.order.domain.valueobject.StreetAddress;
-import kh.edu.istad.platform.order.domain.valueobject.TrackingId;
+import kh.edu.istad.platform.order.domain.valueobject.*;
 import kh.edu.istad.platform.order.persistence.entity.OrderEntity;
 import kh.edu.istad.platform.order.persistence.entity.OrderItemEntity;
-import kh.edu.istad.platform.order.persistence.repository.OrderItemR2dbcRepository;
-import kh.edu.istad.platform.order.persistence.repository.OrderR2dbcRepository;
+import kh.edu.istad.platform.order.persistence.repository.OrderItemReactiveRepository;
+import kh.edu.istad.platform.order.persistence.repository.OrderReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +24,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderRepositoryAdapter implements OrderRepository {
 
-    private final OrderR2dbcRepository orderRepository;
-    private final OrderItemR2dbcRepository orderItemRepository;
+    private final OrderReactiveRepository orderRepository;
+    private final OrderItemReactiveRepository orderItemRepository;
 
     @Override
     @Transactional
@@ -53,8 +49,6 @@ public class OrderRepositoryAdapter implements OrderRepository {
         List<OrderItemEntity> entities = items.stream()
                 .map(item -> {
                     OrderItemEntity entity = new OrderItemEntity();
-                    entity.setId(item.getId().value());
-                    entity.setOrderId(savedOrder.getId());
                     entity.setProductId(item.getProduct().productId());
                     entity.setProductName(item.getProduct().name());
                     entity.setQuantity(item.getQuantity());
@@ -73,13 +67,9 @@ public class OrderRepositoryAdapter implements OrderRepository {
         entity.setId(order.getId().value());
         entity.setCustomerId(order.getCustomerId().value());
         entity.setBusinessId(order.getBusinessId().value());
-        entity.setStreet(order.getDeliveryAddress().street());
-        entity.setPostalCode(order.getDeliveryAddress().postalCode());
-        entity.setCity(order.getDeliveryAddress().city());
         entity.setPrice(order.getPrice().amount());
         entity.setTrackingId(order.getTrackingId().value());
-        entity.setOrderStatus(order.getOrderStatus());
-        entity.setCreatedAt(order.getCreatedAt());
+        entity.setOrderStatus(order.getOrderStatus() != null ? order.getOrderStatus().name() : null);
 
         return entity;
     }
@@ -90,8 +80,8 @@ public class OrderRepositoryAdapter implements OrderRepository {
     ) {
         List<OrderItem> items = itemEntities.stream()
                 .map(item -> OrderItem.builder()
-                        .id(new OrderItemId(item.getId()))
-                        .orderId(new OrderId(item.getOrderId()))
+                        .id(new OrderItemId(item.getQuantity()))
+                        .orderId(new OrderId(item.getProductId()))
                         .product(new Product(
                                 item.getProductId(),
                                 item.getProductName()
@@ -105,16 +95,10 @@ public class OrderRepositoryAdapter implements OrderRepository {
                 .id(new OrderId(entity.getId()))
                 .customerId(new CustomerId(entity.getCustomerId()))
                 .businessId(new BusinessId(entity.getBusinessId()))
-                .deliveryAddress(new StreetAddress(
-                        entity.getStreet(),
-                        entity.getPostalCode(),
-                        entity.getCity()
-                ))
                 .price(new Money(entity.getPrice()))
                 .items(items)
                 .trackingId(new TrackingId(entity.getTrackingId()))
-                .orderStatus(entity.getOrderStatus())
-                .createdAt(entity.getCreatedAt())
+                .orderStatus(entity.getOrderStatus() != null ? OrderStatus.valueOf(entity.getOrderStatus()) : null)
                 .build();
     }
 }

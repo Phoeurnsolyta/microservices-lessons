@@ -1,6 +1,5 @@
 package kh.edu.istad.platform.order.persistence.entity;
 
-import kh.edu.istad.platform.order.domain.valueobject.OrderStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,14 +25,8 @@ public class OrderEntity {
     @Column("business_id")
     private UUID businessId;
 
-    @Column("street")
-    private String street;
-
-    @Column("postal_code")
-    private String postalCode;
-
-    @Column("city")
-    private String city;
+    private String failureMessage;
+    private UUID orderAddressId;
 
     @Column("price")
     private BigDecimal price;
@@ -42,8 +35,6 @@ public class OrderEntity {
     private UUID trackingId;
 
     @Column("order_status")
-    private OrderStatus orderStatus;
+    private String orderStatus;
 
-    @Column("created_at")
-    private ZonedDateTime createdAt;
 }

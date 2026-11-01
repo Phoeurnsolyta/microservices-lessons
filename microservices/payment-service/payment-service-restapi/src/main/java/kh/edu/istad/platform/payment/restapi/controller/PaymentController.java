@@ -1,6 +1,8 @@
 package kh.edu.istad.platform.payment.restapi.controller;
 
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,24 +10,34 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
 
-    @Value("${server.port:8084}")
-    private String serverPort;
+    public record PaymentRequest(
+            @NotNull UUID orderId,
+            @NotNull @Positive BigDecimal amount
+    ) {}
+
+    public record PaymentResponse(
+            UUID paymentId,
+            UUID orderId,
+            BigDecimal amount,
+            String status
+    ) {}
 
     @PostMapping
-    public ResponseEntity<?> createPayment(@RequestBody Map<String, Object> request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "paymentId", UUID.randomUUID().toString(),
-                "orderId", request.getOrDefault("orderId", UUID.randomUUID().toString()),
-                "amount", request.getOrDefault("amount", 0.0),
-                "status", "COMPLETED",
-                "servedByPort", serverPort
-        ));
+    public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody PaymentRequest request) {
+        PaymentResponse response = new PaymentResponse(
+                UUID.randomUUID(),
+                request.orderId(),
+                request.amount(),
+                "COMPLETED"
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

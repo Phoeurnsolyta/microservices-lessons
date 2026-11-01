@@ -15,12 +15,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table("order_items")
 public class OrderItemEntity {
-
     @Id
-    private UUID id;
-
-    @Column("order_id")
-    private UUID orderId;
+    OrderItemEntityId id;
 
     @Column("product_id")
     private UUID productId;

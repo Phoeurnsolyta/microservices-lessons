@@ -8,6 +8,7 @@ plugins {
 //}
 
 dependencies {
+    implementation 'kh.edu.istad:istad-common-swagger'
     implementation 'kh.edu.istad:payment-domain-core'
     implementation 'kh.edu.istad:payment-application-service'
     implementation 'kh.edu.istad:payment-service-message'

@@ -6,11 +6,18 @@ pluginManagement {
     }
 }
 
-//
 dependencyResolutionManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
+    }
+
+    versionCatalogs {
+        libs {
+            from(
+                    files("../gradle/libs.versions.toml")
+            )
+        }
     }
 }
 
