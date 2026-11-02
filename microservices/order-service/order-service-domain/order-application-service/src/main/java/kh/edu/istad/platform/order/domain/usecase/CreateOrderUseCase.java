@@ -37,7 +37,9 @@ public class CreateOrderUseCase {
 
         List<OrderItem> items = command.items().stream()
                 .map(item -> OrderItem.builder()
-                        .id(new OrderItemId(item.quantity()))
+                        .id(new OrderItemId(
+                                UUID.randomUUID().hashCode() & Integer.MAX_VALUE
+                        ))
                         .orderId(orderId)
                         .product(new Product(
                                 item.productId(),

@@ -1,18 +1,22 @@
 package kh.edu.istad.platform.order.client.adapter;
 
+import kh.edu.istad.platform.order.client.httpclient.CustomerHttpClient;
+import kh.edu.istad.platform.order.domain.dto.QueryCustomerResult;
 import kh.edu.istad.platform.order.domain.port.out.CustomerServiceClient;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 @Component
+@RequiredArgsConstructor
 public class CustomerServiceClientAdapter implements CustomerServiceClient {
 
     private final WebClient.Builder webClientBuilder;
+    private final CustomerHttpClient customerHttpClient;
 
-    public CustomerServiceClientAdapter(WebClient.Builder webClientBuilder) {
-        this.webClientBuilder = webClientBuilder;
-    }
 
     private record ValuePayload(String value) {}
 
@@ -25,6 +29,11 @@ public class CustomerServiceClientAdapter implements CustomerServiceClient {
             ValuePayload phoneNumber,
             String status
     ) {}
+
+    @Override
+    public Flux<QueryCustomerResult> getCustomerName() {
+        return customerHttpClient.queryCustomers();
+    }
 
     @Override
     public Flux<CustomerResponse> getCustomers() {

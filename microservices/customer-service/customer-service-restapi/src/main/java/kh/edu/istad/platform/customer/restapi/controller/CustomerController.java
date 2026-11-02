@@ -1,6 +1,7 @@
 package kh.edu.istad.platform.customer.restapi.controller;
 
 import jakarta.validation.Valid;
+import kh.edu.istad.common.domain.exception.DomainException;
 import kh.edu.istad.platform.customer.domain.dto.CustomerStatisticResult;
 import kh.edu.istad.platform.customer.domain.dto.InitiateCustomerResult;
 import kh.edu.istad.platform.customer.domain.entity.Customer;
@@ -32,6 +33,11 @@ public class CustomerController {
     private final AssignCustomerSegmentUseCase assignCustomerSegmentUseCase;
     private final CustomerStatisticUseCase customerStatisticUseCase;
 
+
+    @GetMapping
+    public Flux<Customer> finaAll() {
+        throw new DomainException("Luca Domenico");
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

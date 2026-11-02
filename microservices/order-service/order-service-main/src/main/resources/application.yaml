@@ -30,3 +30,12 @@ spring:
         format: yaml
         watch:
           enabled: true
+
+  http:
+    serviceclient:
+      customer-service:
+        connect-timeout:
+          seconds: 10
+        read-timeout:
+          seconds: 10
+        base-url: http://customer-service

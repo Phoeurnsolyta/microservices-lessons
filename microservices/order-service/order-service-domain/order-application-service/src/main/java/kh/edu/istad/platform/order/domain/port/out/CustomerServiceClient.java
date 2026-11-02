@@ -1,5 +1,6 @@
 package kh.edu.istad.platform.order.domain.port.out;
 
+import kh.edu.istad.platform.order.domain.dto.QueryCustomerResult;
 import reactor.core.publisher.Flux;
 
 public interface CustomerServiceClient {
@@ -15,5 +16,6 @@ public interface CustomerServiceClient {
             String customerSegmentType
     ) {}
 
+    Flux<QueryCustomerResult> getCustomerName();
     Flux<CustomerResponse> getCustomers();
 }

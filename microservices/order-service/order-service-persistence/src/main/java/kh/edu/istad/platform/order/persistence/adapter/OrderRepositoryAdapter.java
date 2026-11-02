@@ -10,6 +10,7 @@ import kh.edu.istad.platform.order.domain.port.out.OrderRepository;
 import kh.edu.istad.platform.order.domain.valueobject.*;
 import kh.edu.istad.platform.order.persistence.entity.OrderEntity;
 import kh.edu.istad.platform.order.persistence.entity.OrderItemEntity;
+import kh.edu.istad.platform.order.persistence.entity.OrderItemEntityId;
 import kh.edu.istad.platform.order.persistence.repository.OrderItemReactiveRepository;
 import kh.edu.istad.platform.order.persistence.repository.OrderReactiveRepository;
 import lombok.RequiredArgsConstructor;
@@ -49,11 +50,18 @@ public class OrderRepositoryAdapter implements OrderRepository {
         List<OrderItemEntity> entities = items.stream()
                 .map(item -> {
                     OrderItemEntity entity = new OrderItemEntity();
+
+                    entity.setId(new OrderItemEntityId(
+                            item.getId().value(),
+                            savedOrder.getId()
+                    ));
+
                     entity.setProductId(item.getProduct().productId());
                     entity.setProductName(item.getProduct().name());
                     entity.setQuantity(item.getQuantity());
                     entity.setPrice(item.getPrice().amount());
                     entity.setSubTotal(item.getSubTotal().amount());
+
                     return entity;
                 })
                 .toList();
@@ -80,8 +88,8 @@ public class OrderRepositoryAdapter implements OrderRepository {
     ) {
         List<OrderItem> items = itemEntities.stream()
                 .map(item -> OrderItem.builder()
-                        .id(new OrderItemId(item.getQuantity()))
-                        .orderId(new OrderId(item.getProductId()))
+                        .id(new OrderItemId(item.getId().id()))
+                        .orderId(new OrderId(item.getId().orderId()))
                         .product(new Product(
                                 item.getProductId(),
                                 item.getProductName()
@@ -98,7 +106,9 @@ public class OrderRepositoryAdapter implements OrderRepository {
                 .price(new Money(entity.getPrice()))
                 .items(items)
                 .trackingId(new TrackingId(entity.getTrackingId()))
-                .orderStatus(entity.getOrderStatus() != null ? OrderStatus.valueOf(entity.getOrderStatus()) : null)
+                .orderStatus(entity.getOrderStatus() != null
+                        ? OrderStatus.valueOf(entity.getOrderStatus())
+                        : null)
                 .build();
     }
 }
