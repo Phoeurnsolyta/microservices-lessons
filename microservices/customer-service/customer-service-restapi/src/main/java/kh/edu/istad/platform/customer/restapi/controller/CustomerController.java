@@ -34,10 +34,10 @@ public class CustomerController {
     private final CustomerStatisticUseCase customerStatisticUseCase;
 
 
-    @GetMapping
-    public Flux<Customer> finaAll() {
-        throw new DomainException("Luca Domenico");
-    }
+//    @GetMapping
+//    public Flux<Customer> finaAll() {
+//        throw new DomainException("Luca Domenico");
+//    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

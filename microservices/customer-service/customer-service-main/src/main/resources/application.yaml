@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: customer-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000
+
   cloud:
     consul:
       discovery:
@@ -11,6 +17,7 @@ spring:
         service-name: customer-service
         prefer-ip-address: true
         instance-id: ${spring.application.name}:${random.value}
+
   mongodb:
     host: localhost
     port: 2026
