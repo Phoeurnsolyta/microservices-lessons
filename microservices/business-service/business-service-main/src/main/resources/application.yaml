@@ -4,6 +4,39 @@ server:
 spring:
   application:
     name: business-service
+  config:
+    import: "optional:consul:"
+  profiles:
+    active: dev
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+    consul:
+      discovery:
+        health-check-url: http://host.docker.internal:${server.port}/actuator/health
+        prefer-ip-address: true
+        service-name: ${spring.application.name}
+        instance-id: ${spring.application.name}-${random.value}
+      config:
+        enabled: true
+        format: yaml
+        watch:
+          enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health, gateway"
+  endpoint:
+    gateway:
+      access: read_only
+
   mongodb:
     host: localhost
     port: 2026

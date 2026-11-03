@@ -1,3 +1,5 @@
+server:
+  port: 6767
 spring:
   application:
     name: order-service
@@ -19,26 +21,33 @@ spring:
   config:
     import: "optional:consul:"
   cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
     consul:
       discovery:
         health-check-url: http://host.docker.internal:${server.port}/actuator/health
         prefer-ip-address: true
-        service-name: order-service
+        service-name: ${spring.application.name}
         instance-id: ${spring.application.name}-${random.value}
       config:
         enabled: true
         format: yaml
         watch:
           enabled: true
-  security:
-    oauth2:
-      client:
-        registration:
-          service-client:
-            authorization-grant-type: client_credentials
-            client-id:
-            client-name:
-            client-secret:
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          service-client:
+#            authorization-grant-type: client_credentials
+#            client-id:
+#            client-name:
+#            client-secret:
 
 
 #  http:
@@ -49,3 +58,9 @@ spring:
 #        read-timeout:
 #          seconds: 10
 #        base-url: http://customer-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,gateway"
