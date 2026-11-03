@@ -49,18 +49,11 @@ spring:
 #            client-name:
 #            client-secret:
 
-
-#  http:
-#    serviceclient:
-#      customer-service:
-#        connect-timeout:
-#          seconds: 10
-#        read-timeout:
-#          seconds: 10
-#        base-url: http://customer-service
-
 management:
   endpoints:
     web:
       exposure:
-        include: "health,gateway"
+        include: "health, gateway"
+  endpoint:
+    gateway:
+      access: read_only

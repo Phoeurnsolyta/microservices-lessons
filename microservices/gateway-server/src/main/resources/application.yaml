@@ -21,6 +21,13 @@ spring:
                 - Path=/my-orders/**
               filters:
                 - RewritePath=/api/my-orders/?(?<segment>.*), /$\{segment}
+                - SaveSession
+            - id: json-placeholder
+              uri: https://jsonplaceholder.typicode.com
+              predicates:
+                - Path=/jph/**
+              filters:
+                - RewritePath=/jph/?(?<segment>.*), /$\{segment}
             - id: nextjs
               uri: http://localhost:3000
               predicates:
