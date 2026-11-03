@@ -3,6 +3,7 @@ server:
 spring:
   application:
     name: order-service
+
   r2dbc:
     url: r2dbc:postgresql://localhost:9543/db_order
     username: iteuser
@@ -39,15 +40,22 @@ spring:
         format: yaml
         watch:
           enabled: true
-#  security:
-#    oauth2:
-#      client:
-#        registration:
-#          service-client:
-#            authorization-grant-type: client_credentials
-#            client-id:
-#            client-name:
-#            client-secret:
+
+  security:
+    oauth2:
+      client:
+        registration:
+          service-client:
+            provider: authorization-server
+            authorization-grant-type: client_credentials
+            client-id: order-service
+            client-secret: order-secret
+            client-authentication-method: client_secret_basic
+            scope:
+              - customer.read
+        provider:
+          authorization-server:
+            token-uri: http://localhost:9000/oauth2/token
 
 management:
   endpoints:
