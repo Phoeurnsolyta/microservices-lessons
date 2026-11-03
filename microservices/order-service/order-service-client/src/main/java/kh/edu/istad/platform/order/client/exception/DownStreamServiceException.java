@@ -23,7 +23,4 @@ public class DownStreamServiceException extends RuntimeException {
         return service;
     }
 
-
-
-
 }
