@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package customer;
+
+option java_multiple_files = true;
+option java_package = "kh.edu.istad.platform.customer.contract";
+option java_outer_classname = "CustomerProto";
+
+service CustomerService {
+
+  rpc GetCustomerById (GetCustomerByIdRequest)
+      returns (GetCustomerByIdResponse);
+
+}
+
+message GetCustomerByIdRequest {
+  string customer_id = 1;
+}
+
+message GetCustomerByIdResponse {
+  string customer_id = 1;
+  string username = 2;
+  string family_name = 3;
+  string given_name = 4;
+  string email = 5;
+  string phone_number = 6;
+  string status = 7;
+  string segment_id = 8;
+}

@@ -41,9 +41,11 @@
               <build path="$PROJECT_DIR$/microservices/customer-service" name="customer-service">
                 <projects>
                   <project path="$PROJECT_DIR$/microservices/customer-service" />
+                  <project path="$PROJECT_DIR$/microservices/customer-service/customer-service-contract" />
                   <project path="$PROJECT_DIR$/microservices/customer-service/customer-service-domain" />
                   <project path="$PROJECT_DIR$/microservices/customer-service/customer-service-domain/customer-application-service" />
                   <project path="$PROJECT_DIR$/microservices/customer-service/customer-service-domain/customer-domain-core" />
+                  <project path="$PROJECT_DIR$/microservices/customer-service/customer-service-grpc-server" />
                   <project path="$PROJECT_DIR$/microservices/customer-service/customer-service-main" />
                   <project path="$PROJECT_DIR$/microservices/customer-service/customer-service-message" />
                   <project path="$PROJECT_DIR$/microservices/customer-service/customer-service-persistence" />
@@ -115,9 +117,11 @@
             <option value="$PROJECT_DIR$/microservices/business-service/business-service-persistence" />
             <option value="$PROJECT_DIR$/microservices/business-service/business-service-restapi" />
             <option value="$PROJECT_DIR$/microservices/customer-service" />
+            <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-contract" />
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-domain" />
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-domain/customer-application-service" />
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-domain/customer-domain-core" />
+            <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-grpc-server" />
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-main" />
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-message" />
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-persistence" />

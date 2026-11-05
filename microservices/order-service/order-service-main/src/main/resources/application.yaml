@@ -1,6 +1,11 @@
 server:
   port: 6767
 spring:
+  grpc:
+    client:
+      channel:
+        customer-service:
+          target: static://localhost:9091
   main:
     web-application-type: reactive
   application:

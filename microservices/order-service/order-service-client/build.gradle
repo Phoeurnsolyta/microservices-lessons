@@ -6,6 +6,7 @@ plugins {
 dependencies {
 
     implementation 'kh.edu.istad:order-application-service'
+    implementation 'kh.edu.istad:customer-service-contract'
 
     implementation 'org.springframework.boot:spring-boot-starter-webclient'
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client'
@@ -13,5 +14,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+    implementation 'org.springframework.boot:spring-boot-starter-grpc-client'
 
 }

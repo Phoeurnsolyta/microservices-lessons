@@ -1,0 +1,11 @@
+plugins {
+    id 'spring-common-conventions'
+}
+
+dependencies {
+    api 'kh.edu.istad:customer-application-service'
+    api 'kh.edu.istad:customer-service-contract'
+
+    implementation 'org.springframework.boot:spring-boot-starter-grpc-server'
+    implementation 'io.projectreactor:reactor-core'
+}
