@@ -6,6 +6,7 @@ pluginManagement {
         mavenCentral()
     }
 }
+includeBuild('../../istad-common')
 dependencyResolutionManagement {
     repositories {
         mavenCentral()

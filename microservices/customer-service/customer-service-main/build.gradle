@@ -3,13 +3,26 @@ plugins {
     id 'spring-cloud-common-conventions'
 }
 
+dependencyManagement {
+    dependencies {
+        dependency 'com.google.protobuf:protobuf-java:4.36.2'
+        dependency 'com.google.protobuf:protobuf-java-util:4.36.2'
+    }
+}
+
 dependencies {
-    implementation 'kh.edu.istad:customer-domain-core'
-    implementation 'kh.edu.istad:customer-application-service'
-    implementation 'kh.edu.istad:customer-service-message'
-    implementation 'kh.edu.istad:customer-service-persistence'
-    implementation 'kh.edu.istad:customer-service-restapi'
-    implementation 'kh.edu.istad:customer-service-grpc-server'
+    implementation project(':customer-service-domain:customer-domain-core')
+    implementation project(':customer-service-domain:customer-application-service')
+    implementation project(':customer-service-message')
+    implementation project(':customer-service-persistence')
+    implementation project(':customer-service-restapi')
+    implementation project(':customer-service-grpc-server')
+//    implementation 'kh.edu.istad:customer-domain-core'
+//    implementation 'kh.edu.istad:customer-application-service'
+//    implementation 'kh.edu.istad:customer-service-message'
+//    implementation 'kh.edu.istad:customer-service-persistence'
+//    implementation 'kh.edu.istad:customer-service-restapi'
+//    implementation 'kh.edu.istad:customer-service-grpc-server'
 
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 

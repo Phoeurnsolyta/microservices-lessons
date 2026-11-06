@@ -3,8 +3,12 @@ plugins {
 }
 
 dependencies {
-    api 'kh.edu.istad:customer-application-service'
-    api 'kh.edu.istad:customer-service-contract'
+    api project(':customer-service-domain:customer-application-service')
+    api project(':customer-service-contract')
+//    api 'kh.edu.istad:customer-application-service'
+//    api 'kh.edu.istad:customer-service-contract'
+
+    implementation 'com.google.protobuf:protobuf-java:4.36.2'
 
     implementation 'org.springframework.boot:spring-boot-starter-grpc-server'
     implementation 'io.projectreactor:reactor-core'

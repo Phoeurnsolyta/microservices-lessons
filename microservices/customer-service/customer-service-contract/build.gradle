@@ -1,31 +1,36 @@
 plugins {
     id 'spring-common-conventions'
-    id 'com.google.protobuf' version '0.9.6'
-}
-
-protobuf {
-    protoc {
-        artifact = 'com.google.protobuf:protoc:3.25.5'
-    }
-
-    plugins {
-        grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.68.1'
-        }
-    }
-
-    generateProtoTasks {
-        all().each { task ->
-            task.plugins {
-                grpc {}
-            }
-        }
-    }
 }
 
 dependencies {
-    api 'com.google.protobuf:protobuf-java'
+    api 'com.google.protobuf:protobuf-java:4.36.2'
     api 'io.grpc:grpc-stub'
     api 'io.grpc:grpc-protobuf'
     compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
+}
+
+tasks.register('generateBufProto', Exec) {
+    workingDir projectDir
+
+    commandLine 'buf',
+            'generate',
+            'buf.build/lyta/customer-service-contract',
+            '--template',
+            'D:/Download/buf-contracts/buf.gen.yaml',
+            '-o',
+            'build/buf'
+
+    outputs.dir(layout.buildDirectory.dir('buf'))
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir layout.buildDirectory.dir('buf/gen/java')
+        }
+    }
+}
+
+tasks.named('compileJava') {
+    dependsOn tasks.named('generateBufProto')
 }
