@@ -2,9 +2,6 @@ package kh.edu.istad.iam.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
-
 import java.util.List;
 import java.util.Set;
 

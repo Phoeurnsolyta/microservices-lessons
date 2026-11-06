@@ -37,22 +37,18 @@ public class InitCore {
         User user = User.builder()
                 .familyName("Phoeurn")
                 .givenName("Solyta")
-                .password("password")
-                .gender("Female")
                 .email("lyta07807@gmail.com")
+                .gender("Female")
                 .emailVerified(true)
-                .username("lyta")
-                .password(passwordEncoder.encode("password"))
+                .username("phoeurnsolyta")
+                .password(passwordEncoder.encode("secret"))
                 .build();
 
-        if (!userJpaRepository.existsByUsername("lyta")) {
-
+        if(!userJpaRepository.existsByUsername("phoeurnsolyta")){
             role = roleJpaRepository.save(role);
             permission = permissionJpaRepository.save(permission);
-
             user.setRoles(Set.of(role));
             user.setPermissions(Set.of(permission));
-
             userJpaRepository.save(user);
         }
     }

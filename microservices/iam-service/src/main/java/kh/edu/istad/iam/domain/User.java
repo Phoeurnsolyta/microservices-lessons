@@ -2,9 +2,6 @@ package kh.edu.istad.iam.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import org.springframework.data.relational.core.mapping.Table;
-
 import java.time.LocalDate;
 import java.util.Set;
 

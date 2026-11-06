@@ -1,5 +1,12 @@
--- sql for create db object
--- sql for create db object
+/*
+IMPORTANT:
+    If using PostgreSQL:
+        - update ALL columns defined with 'text' to 'text', as PostgreSQL does not support the 'text' data type.
+        - update ALL columns defined with 'timestamptz' to 'timestamptztz', to ensure that time instants are stored accurately.
+    If using MySQL:
+        - add 'preserveInstants=true&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true' to JDBC connection URL
+          to ensure that time instants are stored accurately. See https://dev.mysql.com/doc/connector-j/en/connector-j-time-instants.html
+*/
 CREATE TABLE oauth2_authorization (
                                       id varchar(100) NOT NULL,
                                       registered_client_id varchar(100) NOT NULL,
@@ -35,11 +42,4 @@ CREATE TABLE oauth2_authorization (
                                       device_code_expires_at timestamptz DEFAULT NULL,
                                       device_code_metadata text DEFAULT NULL,
                                       PRIMARY KEY (id)
-);
-
-CREATE TABLE oauth2_authorization_consent (
-                                              registered_client_id varchar(100) NOT NULL,
-                                              principal_name varchar(200) NOT NULL,
-                                              authorities varchar(1000) NOT NULL,
-                                              PRIMARY KEY (registered_client_id, principal_name)
 );

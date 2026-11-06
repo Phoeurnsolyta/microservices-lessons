@@ -7,17 +7,21 @@ spring:
         registration:
           github:
             provider: github
-            client-id: Ov23liUxJvASQKSqdWYl
-            client-secret: 5d14c1ded787828bdaa6f8d698308e6518cbb563
-            client-name: github
-            redirect-uri:
-
-
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            client-name: GitHub
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          google:
+            provider: google
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            client-name: Google
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 
   datasource:
-    url: jdbc:postgresql://localhost:9543/db_oauth2
-    username: iteuser
-    password: qwerqwer
+    url: ${URL}
+    username: ${USERNAME}
+    password: ${PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:

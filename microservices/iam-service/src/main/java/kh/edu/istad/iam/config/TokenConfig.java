@@ -17,30 +17,27 @@ import java.util.stream.Collectors;
 @Configuration
 @Slf4j
 public class TokenConfig {
-
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer(){
         return context -> {
-            System.out.println("HIttttt");
-            SecurityContext cn = SecurityContextHolder.getContext();
-            Authentication authentication = cn.getAuthentication();
-            System.out.println(cn);
+            Authentication authentication = context.getPrincipal();
+            log.info("Authentication: {}", authentication);
             if(authentication == null){
                 return;
             }
-            System.out.println(authentication);
             var principal = authentication.getPrincipal();
+            log.info("Principle : {}", principal);
             System.out.println(principal);
             if(principal instanceof UserDetails user){
+
                 if(OAuth2ParameterNames.ACCESS_TOKEN.equals(context.getTokenType().getValue())){
                     context.getClaims()
                             .claims(claim -> {
                                 claim.put("preferred_username", user.getUsername());
-                                claim.put("authorities", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining()));
+                                claim.put("authorities", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()));
                             });
                 }
             }
-
         };
     }
 }

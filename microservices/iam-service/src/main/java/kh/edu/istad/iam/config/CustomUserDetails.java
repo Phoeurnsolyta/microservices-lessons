@@ -71,6 +71,11 @@ public class CustomUserDetails implements UserDetails {
         return user.isEnabled();
     }
 
-
-
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof User that){
+            return this.user.getUsername().equals(that.getUsername());
+        }
+        return false;
+    }
 }
