@@ -3,8 +3,19 @@ plugins {
     id 'spring-cloud-common-conventions'
 }
 
+// build.gradle
+repositories {
+    mavenCentral()
+    maven {
+        name = 'buf'
+        url 'https://buf.build/gen/maven'
+    }
+}
+
 dependencies {
 
+    implementation('build.buf.gen:lyta_buf-contracts_grpc_java:1.85.1.1.20261106045652.63e944af8d80')
+    implementation('build.buf.gen:lyta_buf-contracts_protocolbuffers_java:36.2.0.1.20261106045652.63e944af8d80')
     implementation 'kh.edu.istad:order-application-service'
     implementation 'kh.edu.istad:customer-service-contract'
 
