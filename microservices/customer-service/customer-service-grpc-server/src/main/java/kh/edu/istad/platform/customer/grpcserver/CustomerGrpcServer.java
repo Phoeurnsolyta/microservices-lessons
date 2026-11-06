@@ -54,8 +54,7 @@ public class CustomerGrpcServer extends CustomerServiceGrpc.CustomerServiceImplB
                                     customer.getUsername()
                             );
 
-                            GetCustomerByIdResponse response =
-                                    mapToResponse(customer);
+                            GetCustomerByIdResponse response = mapToResponse(customer);
 
                             responseObserver.onNext(response);
                             responseObserver.onCompleted();
@@ -66,7 +65,6 @@ public class CustomerGrpcServer extends CustomerServiceGrpc.CustomerServiceImplB
                         error -> {
                             log.error("Failed to retrieve customer: {}",
                                     error.getMessage());
-
                             responseObserver.onError(
                                     Status.NOT_FOUND
                                             .withDescription(error.getMessage())
@@ -90,6 +88,8 @@ public class CustomerGrpcServer extends CustomerServiceGrpc.CustomerServiceImplB
                                 ? ""
                                 : customer.getSegmentId().toString()
                 )
+
                 .build();
+
     }
 }

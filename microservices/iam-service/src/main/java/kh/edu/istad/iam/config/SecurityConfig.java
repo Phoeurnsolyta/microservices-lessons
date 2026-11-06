@@ -23,7 +23,9 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
@@ -100,8 +102,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public OAuth2AuthorizationService oAuth2AuthorizationService() {
+    public OAuth2AuthorizationService oAuth2AuthorizationService(){
         return new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository());
+    }
+
+    @Bean
+    public OAuth2AuthorizationConsentService oAuth2AuthorizationConsentService(){
+        return new JdbcOAuth2AuthorizationConsentService(jdbcTemplate, registeredClientRepository());
     }
 
     @Bean
