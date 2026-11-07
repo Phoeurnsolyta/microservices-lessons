@@ -6,4 +6,5 @@ dependencies {
     api 'kh.edu.istad:iam-application-service'
 
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
 }

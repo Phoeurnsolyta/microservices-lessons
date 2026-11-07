@@ -1,0 +1,125 @@
+
+
+CREATE TABLE users
+(
+    id                         BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+    uuid                       UUID                                NOT NULL,
+    username                   VARCHAR(50)                         NOT NULL,
+    email                      VARCHAR(255)                        NOT NULL,
+    email_verified             BOOLEAN                             NOT NULL DEFAULT FALSE,
+    password_hash              VARCHAR(255),
+    given_name                 VARCHAR(100)                        NOT NULL,
+    family_name                VARCHAR(100)                        NOT NULL,
+    middle_name                VARCHAR(100),
+    nickname                   VARCHAR(100),
+    gender                     VARCHAR(20),
+    birthdate                  DATE,
+    profile_url                VARCHAR(500),
+    picture_url                VARCHAR(500),
+    website_url                VARCHAR(500),
+    zoneinfo                   VARCHAR(50),
+    locale                     VARCHAR(10)                         NOT NULL DEFAULT 'en',
+    phone_number               VARCHAR(20),
+    phone_number_verified      BOOLEAN                             NOT NULL DEFAULT FALSE,
+    address_street_address     VARCHAR(255),
+    address_locality           VARCHAR(100),
+    address_region             VARCHAR(100),
+    address_postal_code        VARCHAR(20),
+    address_country            CHAR(2),
+    enabled                    BOOLEAN                             NOT NULL DEFAULT TRUE,
+    account_non_expired        BOOLEAN                             NOT NULL DEFAULT TRUE,
+    account_non_locked         BOOLEAN                             NOT NULL DEFAULT TRUE,
+    credentials_non_expired    BOOLEAN                             NOT NULL DEFAULT TRUE,
+    failed_login_attempts      INT                                 NOT NULL DEFAULT 0,
+    last_login_at              TIMESTAMPTZ,
+    password_changed_at        TIMESTAMPTZ,
+    is_deleted                 BOOLEAN                             NOT NULL DEFAULT FALSE,
+    deleted_at                 TIMESTAMPTZ,
+    deleted_by                 VARCHAR(100),
+    created_at                 TIMESTAMPTZ                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by                 VARCHAR(100)                        NOT NULL,
+    updated_at                 TIMESTAMPTZ                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by                 VARCHAR(100)                        NOT NULL,
+    version                    BIGINT                              NOT NULL DEFAULT 0,
+    CONSTRAINT pk_users PRIMARY KEY (id),
+    CONSTRAINT uk_users_uuid UNIQUE (uuid),
+    CONSTRAINT uk_users_username UNIQUE (username),
+    CONSTRAINT uk_users_email UNIQUE (email),
+    CONSTRAINT uk_users_phone_number UNIQUE (phone_number)
+);
+
+
+CREATE TABLE roles
+(
+    id          BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+    uuid        UUID                                NOT NULL,
+    name        VARCHAR(50)                         NOT NULL,
+    description VARCHAR(255),
+    is_system   BOOLEAN                             NOT NULL DEFAULT FALSE,
+    is_active   BOOLEAN                             NOT NULL DEFAULT TRUE,
+    is_deleted  BOOLEAN                             NOT NULL DEFAULT FALSE,
+    deleted_at  TIMESTAMPTZ,
+    deleted_by  VARCHAR(100),
+    created_at  TIMESTAMPTZ                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by  VARCHAR(100)                        NOT NULL,
+    updated_at  TIMESTAMPTZ                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by  VARCHAR(100)                        NOT NULL,
+    version     BIGINT                              NOT NULL DEFAULT 0,
+    CONSTRAINT pk_roles PRIMARY KEY (id),
+    CONSTRAINT uk_roles_uuid UNIQUE (uuid),
+    CONSTRAINT uk_roles_name UNIQUE (name)
+);
+
+
+CREATE TABLE permissions
+(
+    id          BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+    uuid        UUID                                NOT NULL,
+    name        VARCHAR(100)                        NOT NULL,
+    resource    VARCHAR(50)                         NOT NULL,
+    action      VARCHAR(50)                         NOT NULL,
+    description VARCHAR(255),
+    is_system   BOOLEAN                             NOT NULL DEFAULT FALSE,
+    is_active   BOOLEAN                             NOT NULL DEFAULT TRUE,
+    is_deleted  BOOLEAN                             NOT NULL DEFAULT FALSE,
+    deleted_at  TIMESTAMPTZ,
+    deleted_by  VARCHAR(100),
+    created_at  TIMESTAMPTZ                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by  VARCHAR(100)                        NOT NULL,
+    updated_at  TIMESTAMPTZ                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by  VARCHAR(100)                        NOT NULL,
+    version     BIGINT                              NOT NULL DEFAULT 0,
+    CONSTRAINT pk_permissions PRIMARY KEY (id),
+    CONSTRAINT uk_permissions_uuid UNIQUE (uuid),
+    CONSTRAINT uk_permissions_name UNIQUE (name)
+);
+
+
+CREATE TABLE identities
+(
+    id               BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+    uuid             UUID                                NOT NULL,
+    user_id          BIGINT                              NOT NULL,
+    provider         VARCHAR(20)                         NOT NULL,
+    provider_subject VARCHAR(255)                        NOT NULL,
+    email            VARCHAR(255),
+    email_verified   BOOLEAN                             NOT NULL DEFAULT FALSE,
+    display_name     VARCHAR(150),
+    username         VARCHAR(100),
+    picture_url      VARCHAR(500),
+    attributes       JSONB,
+    linked_at        TIMESTAMPTZ                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login_at    TIMESTAMPTZ,
+    is_deleted       BOOLEAN                             NOT NULL DEFAULT FALSE,
+    deleted_at       TIMESTAMPTZ,
+    deleted_by       VARCHAR(100),
+    created_at       TIMESTAMPTZ                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by       VARCHAR(100)                        NOT NULL,
+    updated_at       TIMESTAMPTZ                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by       VARCHAR(100)                        NOT NULL,
+    version          BIGINT                              NOT NULL DEFAULT 0,
+    CONSTRAINT pk_identities PRIMARY KEY (id),
+    CONSTRAINT uk_identities_uuid UNIQUE (uuid),
+    CONSTRAINT uk_identities_provider_subject UNIQUE (provider, provider_subject),
+    CONSTRAINT fk_identities_on_user FOREIGN KEY (user_id) REFERENCES users (id)
+);
