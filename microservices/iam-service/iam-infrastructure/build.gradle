@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     api 'kh.edu.istad:iam-application-service'
+    api 'kh.edu.istad:iam-persistence'
 
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-authorization-server'
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client'

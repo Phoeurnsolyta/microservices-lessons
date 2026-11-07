@@ -1,10 +1,12 @@
-package kh.edu.istad.platform.iam.persistence.enitity;
+package kh.edu.istad.platform.iam.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -19,17 +21,41 @@ public class RoleEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String role;
+    @Column(nullable = false, unique = true)
+    private UUID uuid;
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String name;
     private String description;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "roles_permissions",
-            joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id", referencedColumnName = "id")
-    )
-    private Set<kh.edu.istad.platform.iam.persistence.enitity.PermissionEntity> permissions;
+    @Column(name = "is_system", nullable = false)
+    private boolean isSystem;
 
-    @ManyToMany(mappedBy = "roles")
-    private List<kh.edu.istad.platform.iam.persistence.enitity.UserEntity> users;
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
+    @Column(name = "deleted_by", length = 100)
+    private String deletedBy;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "created_by", nullable = false, updatable = false, length = 100)
+    private String createdBy;
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+    @Column(name = "updated_by", nullable = false, length = 100)
+    private String updatedBy;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
 }

@@ -49,10 +49,17 @@ public class SecurityConfig {
 
         http
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-                .with(authorizationServerConfigurer, (authorizationServer) ->
+                .with(authorizationServerConfigurer, authorizationServer ->
                         authorizationServer
-                                .oidc(Customizer.withDefaults())	// Enable OpenID Connect 1.0
+                                .oidc(oidc -> oidc
+                                        .clientRegistrationEndpoint(Customizer.withDefaults()) // Enables POST /connect/register
+                                )
                 )
+//                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
+//                .with(authorizationServerConfigurer, (authorizationServer) ->
+//                        authorizationServer
+//                                .oidc(Customizer.withDefaults())	// Enable OpenID Connect 1.0
+//                )
                 .authorizeHttpRequests((authorize) ->
                         authorize
                                 .anyRequest().authenticated()
@@ -100,12 +107,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public OAuth2AuthorizationService oAuth2AuthorizationService(){
+    public OAuth2AuthorizationService oAuth2AuthorizationService() {
         return new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository());
     }
 
     @Bean
-    public OAuth2AuthorizationConsentService oAuth2AuthorizationConsentService(){
+    public OAuth2AuthorizationConsentService oAuth2AuthorizationConsentService() {
         return new JdbcOAuth2AuthorizationConsentService(jdbcTemplate, registeredClientRepository());
     }
 
@@ -128,8 +135,7 @@ public class SecurityConfig {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
             keyPairGenerator.initialize(2048);
             keyPair = keyPairGenerator.generateKeyPair();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
         return keyPair;

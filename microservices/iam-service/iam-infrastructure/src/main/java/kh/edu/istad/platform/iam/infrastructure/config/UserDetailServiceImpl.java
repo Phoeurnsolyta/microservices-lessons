@@ -1,6 +1,5 @@
 package kh.edu.istad.platform.iam.infrastructure.config;
 
-
 import kh.edu.istad.platform.iam.persistence.repository.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
