@@ -10,6 +10,7 @@ dependencies {
     implementation 'kh.edu.istad:iam-persistence'
     implementation 'kh.edu.istad:iam-rest-api'
     implementation 'kh.edu.istad:iam-infrastructure'
+    implementation libs.springdoc.openapi.starter.webmvc.ui
 
     implementation 'org.springframework.boot:spring-boot-starter-liquibase'
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-authorization-server'
