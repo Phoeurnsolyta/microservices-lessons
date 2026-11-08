@@ -29,6 +29,14 @@ spring:
             client-secret: ${TELEGRAM_CLIENT_SECRET}
             client-name: Telegram
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            scope: user
+        provider:
+          telegram:
+            authorization-uri: https://oauth.telegram.org/auth
+            token-uri: https://oauth.telegram.org/token
+            user-info-uri: https://api.telegram.org/userinfo
+            user-name-attribute: id
 
   datasource:
     url: ${URL}
