@@ -12,6 +12,7 @@ import kh.edu.istad.platform.iam.persistence.entity.UserEntity;
 import kh.edu.istad.platform.iam.persistence.entity.UserPermissionEntity;
 import kh.edu.istad.platform.iam.persistence.entity.UserRoleEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserPersistenceMapper {
@@ -20,6 +21,8 @@ public interface UserPersistenceMapper {
 
     UserEntity toEntity(User domain);
 
+    @Mapping(target = "name",
+            expression = "java(entity.getGivenName() + (entity.getFamilyName() != null && !entity.getFamilyName().isBlank() ? \" \" + entity.getFamilyName() : \"\"))")
     UserSummary toSummary(UserEntity entity);
 
     Identity toDomain(IdentityEntity entity);

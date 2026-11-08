@@ -6,6 +6,7 @@ import kh.edu.istad.platform.iam.domain.entity.RolePermission;
 import kh.edu.istad.platform.iam.persistence.entity.RoleEntity;
 import kh.edu.istad.platform.iam.persistence.entity.RolePermissionEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface RolePersistenceMapper {
@@ -14,6 +15,7 @@ public interface RolePersistenceMapper {
 
     RoleEntity toEntity(Role domain);
 
+    @Mapping(target = "active", source = "active")
     RoleSummary toSummary(RoleEntity entity);
 
     RolePermission toDomain(RolePermissionEntity entity);

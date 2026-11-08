@@ -16,6 +16,10 @@ import kh.edu.istad.platform.iam.persistence.repository.UserJpaRepository;
 import kh.edu.istad.platform.iam.persistence.repository.UserPermissionJpaRepository;
 import kh.edu.istad.platform.iam.persistence.repository.UserRoleJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -75,7 +79,39 @@ public class UserRepositoryAdapter implements UserRepository {
 
     @Override
     public PageResult<UserSummary> findAll(UserFilterQuery query) {
-        return null;
+        Sort sort = Sort.by(Sort.Direction.ASC, "username");
+
+        if (query.sort() != null && !query.sort().isBlank()) {
+            String[] parts = query.sort().split(",");
+            String property = parts[0].trim();
+
+            Sort.Direction direction =
+                    parts.length > 1 && parts[1].trim().equalsIgnoreCase("desc")
+                    ? Sort.Direction.DESC
+                    : Sort.Direction.ASC;
+            sort = Sort.by(direction, property);
+        }
+
+        Pageable pageable = PageRequest.of(query.page(), query.size(), sort);
+
+        Page<UserEntity> page = userJpaRepository
+                .searchUsers(
+                        query.search(),
+                        query.enabled(), pageable
+                );
+
+        List<UserSummary> content = page.getContent().stream()
+                .map(userPersistenceMapper::toSummary)
+                .toList();
+
+        return new PageResult<>(
+                content,
+                new PageResult.PageMetadata(
+                        page.getNumber(),
+                        page.getSize(),
+                        page.getTotalElements(),
+                        page.getTotalPages())
+        );
     }
 
     @Override
@@ -134,8 +170,13 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<Identity> findIdentityByProvider(IdentityProvider provider, String providerSubject) {
-        return Optional.empty();
+    public Optional<Identity> findIdentityByProvider(
+            IdentityProvider provider, String providerSubject) {
+        return identityJpaRepository
+                .findByProviderAndProviderSubjectAndIsDeletedFalse(
+                        provider.name(), providerSubject
+                )
+                .map(userPersistenceMapper::toDomain);
     }
 
     @Override

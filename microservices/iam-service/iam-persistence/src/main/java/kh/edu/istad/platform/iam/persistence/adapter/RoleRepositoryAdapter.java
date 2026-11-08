@@ -6,6 +6,12 @@ import kh.edu.istad.platform.iam.domain.dto.RoleSummary;
 import kh.edu.istad.platform.iam.domain.entity.Role;
 import kh.edu.istad.platform.iam.domain.entity.RolePermission;
 import kh.edu.istad.platform.iam.domain.port.out.RoleRepository;
+import kh.edu.istad.platform.iam.persistence.entity.RoleEntity;
+import kh.edu.istad.platform.iam.persistence.entity.RolePermissionEntity;
+import kh.edu.istad.platform.iam.persistence.mapper.RolePersistenceMapper;
+import kh.edu.istad.platform.iam.persistence.repository.RoleJpaRepository;
+import kh.edu.istad.platform.iam.persistence.repository.RolePermissionJpaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,30 +19,37 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class RoleRepositoryAdapter implements RoleRepository {
+
+    private final RoleJpaRepository roleJpaRepository;
+    private final RolePermissionJpaRepository rolePermissionJpaRepository;
+    private final RolePersistenceMapper rolePersistenceMapper;
+
     @Override
     public Role save(Role role) {
-        return null;
+        RoleEntity entity = rolePersistenceMapper.toEntity(role);
+        return rolePersistenceMapper.toDomain(roleJpaRepository.save(entity));
     }
 
     @Override
     public Optional<Role> findById(Long id) {
-        return Optional.empty();
+        return roleJpaRepository.findById(id).map(rolePersistenceMapper::toDomain);
     }
 
     @Override
     public Optional<Role> findByUuid(UUID uuid) {
-        return Optional.empty();
+        return roleJpaRepository.findByUuid(uuid).map(rolePersistenceMapper::toDomain);
     }
 
     @Override
     public Optional<Role> findByName(String name) {
-        return Optional.empty();
+        return roleJpaRepository.findByName(name).map(rolePersistenceMapper::toDomain);
     }
 
     @Override
     public boolean existsByName(String name) {
-        return false;
+        return roleJpaRepository.existsByName(name);
     }
 
     @Override
@@ -46,16 +59,20 @@ public class RoleRepositoryAdapter implements RoleRepository {
 
     @Override
     public List<RolePermission> findActivePermissionsByRoleId(Long roleId) {
-        return List.of();
+        return rolePermissionJpaRepository.findActiveByRoleId(roleId).stream()
+                .map(rolePersistenceMapper::toDomain)
+                .toList();
     }
 
     @Override
     public Optional<RolePermission> findActiveRolePermission(Long roleId, Long permissionId) {
-        return Optional.empty();
+        return rolePermissionJpaRepository.findActiveAssignment(roleId, permissionId)
+                .map(rolePersistenceMapper::toDomain);
     }
 
     @Override
     public void saveRolePermission(RolePermission rolePermission) {
-
+        RolePermissionEntity entity = rolePersistenceMapper.toEntity(rolePermission);
+        rolePermissionJpaRepository.save(entity);
     }
 }
