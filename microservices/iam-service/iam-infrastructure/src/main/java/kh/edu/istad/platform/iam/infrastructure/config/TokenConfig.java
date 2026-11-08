@@ -1,7 +1,9 @@
 package kh.edu.istad.platform.iam.infrastructure.config;
 
+import kh.edu.istad.platform.iam.domain.dto.AuthUserResult;
 import kh.edu.istad.platform.iam.domain.dto.UserResult;
 import kh.edu.istad.platform.iam.domain.usecase.user.GetUserUseCase;
+import kh.edu.istad.platform.iam.domain.usecase.user.LoadUserForAuthenticationUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -24,14 +26,17 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class TokenConfig {
+
     private final GetUserUseCase getUserUseCase;
+    private final LoadUserForAuthenticationUseCase loadUserForAuthenticationUseCase;
 
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
         return context -> {
             Authentication principal = context.getPrincipal();
             if (principal == null) return;
-            // 1. Customize Access Token: add roles and permissions
+
+            // 1. Customize Access Token: add authorities, roles and permissions
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
                 Set<String> authorities = principal.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
@@ -49,54 +54,55 @@ public class TokenConfig {
                     claims.put("permissions", permissions);
                 });
             }
+
             // 2. Customize ID Token: standard OIDC claims
             if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
-                try {
-                    UUID userUuid = UUID.fromString(principal.getName());
-                    UserResult user = getUserUseCase.execute(userUuid);
-                    context.getClaims().claims(claims -> {
-                        claims.put("sub", user.uuid().toString());
-                        claims.put("preferred_username", user.username());
-                        Set<String> authorizedScopes = context.getAuthorizedScopes();
-                        if (authorizedScopes.contains(OidcScopes.PROFILE)) {
-                            claims.put("name", user.name());
-                            claims.put("given_name", user.givenName());
-                            claims.put("family_name", user.familyName());
-                            claims.put("locale", user.locale());
-                        }
-                        if (authorizedScopes.contains(OidcScopes.EMAIL)) {
-                            claims.put("email", user.email());
-                            claims.put("email_verified", user.emailVerified());
-                        }
-                    });
-                } catch (IllegalArgumentException ignored) {
-                    // Client credentials or non-user principal
+                UUID userUuid = resolveUserUuid(principal);
+                if (userUuid != null) {
+                    try {
+                        UserResult user = getUserUseCase.execute(userUuid);
+                        context.getClaims().claims(claims -> {
+                            claims.put("sub", user.uuid().toString());
+                            claims.put("preferred_username", user.username());
+                            Set<String> authorizedScopes = context.getAuthorizedScopes();
+                            if (authorizedScopes.contains(OidcScopes.PROFILE)) {
+                                claims.put("name", user.name());
+                                claims.put("given_name", user.givenName());
+                                claims.put("family_name", user.familyName());
+                                claims.put("locale", user.locale());
+                            }
+                            if (authorizedScopes.contains(OidcScopes.EMAIL)) {
+                                claims.put("email", user.email());
+                                claims.put("email_verified", user.emailVerified());
+                            }
+                        });
+                    } catch (Exception e) {
+                        log.warn("Failed to populate OIDC claims for user UUID {}: {}",
+                                userUuid, e.getMessage());
+                    }
                 }
             }
         };
     }
 
-//    @Bean
-//    public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer(){
-//        return context -> {
-//            Authentication authentication = context.getPrincipal();
-//            log.info("Authentication: {}", authentication);
-//            if(authentication == null){
-//                return;
-//            }
-//            var principal = authentication.getPrincipal();
-//            log.info("Principle : {}", principal);
-//            System.out.println(principal);
-//            if(principal instanceof UserDetails user){
-//
-//                if(OAuth2ParameterNames.ACCESS_TOKEN.equals(context.getTokenType().getValue())){
-//                    context.getClaims()
-//                            .claims(claim -> {
-//                                claim.put("preferred_username", user.getUsername());
-//                                claim.put("authorities", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()));
-//                            });
-//                }
-//            }
-//        };
-//    }
+    private UUID resolveUserUuid(Authentication principal) {
+        Object principalObj = principal.getPrincipal();
+        if (principalObj instanceof CustomUserDetails cud) {
+            return cud.getUuid();
+        }
+        if (principalObj instanceof CustomOAuth2User cou) {
+            return cou.getUuid();
+        }
+        try {
+            return UUID.fromString(principal.getName());
+        } catch (IllegalArgumentException e) {
+            try {
+                AuthUserResult authUser = loadUserForAuthenticationUseCase
+                        .execute(principal.getName());
+                return authUser.uuid();
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+    }
 }

@@ -48,6 +48,8 @@ import java.util.stream.Collectors;
 public class SecurityConfig {
 
     private final JdbcTemplate jdbcTemplate;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOidcUserService customOidcUserService;
 
     @Bean
     @Order(1)
@@ -114,6 +116,10 @@ public class SecurityConfig {
                 )
                 .oauth2Login(config -> config
                         .loginPage("/login")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                                .oidcUserService(customOidcUserService)
+                        )
                         .permitAll()
                 )
                 .oauth2Client(Customizer.withDefaults())
