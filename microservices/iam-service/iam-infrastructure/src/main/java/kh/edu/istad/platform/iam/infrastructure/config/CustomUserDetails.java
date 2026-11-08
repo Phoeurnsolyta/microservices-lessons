@@ -1,79 +1,100 @@
 package kh.edu.istad.platform.iam.infrastructure.config;
 
+import kh.edu.istad.platform.iam.domain.dto.AuthUserResult;
+import kh.edu.istad.platform.iam.persistence.entity.UserEntity;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-public class CustomUserDetails implements UserDetails {
+@Getter
+@Setter
+@AllArgsConstructor
+public class CustomUserDetails implements UserDetails, Serializable {
 
-    private kh.edu.istad.platform.iam.persistence.enitity.UserEntity user;
+    private final Long id;
+    private final UUID uuid;
+    private final String username;
+    private final String email;
+    private final String password;
+    private final boolean enabled;
+    private final boolean accountNonExpired;
+    private final boolean accountNonLocked;
+    private final boolean credentialsNonExpired;
+    private final Set<GrantedAuthority> authorities;
 
-    public CustomUserDetails(kh.edu.istad.platform.iam.persistence.enitity.UserEntity user) {
-        this.user = user;
+    public CustomUserDetails(AuthUserResult authUser) {
+        this.id = authUser.id();
+        this.uuid = authUser.uuid();
+        this.username = authUser.username();
+        this.email = authUser.email();
+        this.password = authUser.passwordHash() != null ? authUser.passwordHash() : "";
+        this.enabled = authUser.enabled();
+        this.accountNonExpired = authUser.accountNonExpired();
+        this.accountNonLocked = authUser.accountNonLocked();
+        this.credentialsNonExpired = authUser.credentialsNonExpired();
+        this.authorities = authUser.authorities() != null
+                ? authUser.authorities().stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toUnmodifiableSet())
+                : Set.of();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Set<GrantedAuthority> authorities = new HashSet<>();
-        user.getPermissions()
-                .forEach(
-                        permission -> {
-                            authorities.add(
-                                    new SimpleGrantedAuthority(permission.getPermission())
-                            );
-                        }
-                );
-
-        user.getRoles()
-                .forEach(
-                        role -> {
-                            authorities.add(
-                                    new SimpleGrantedAuthority("ROLE_" + role.getRole())
-                            );
-                        }
-                );
         return authorities;
     }
 
     @Override
-    public @Nullable String getPassword() {
-        return user.getPassword();
+    public String getPassword() {
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return username;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return user.isAccountNonExpired();
+        return accountNonExpired;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return user.isAccountNonLocked();
+        return accountNonLocked;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return user.isCredentialsNonExpired();
+        return credentialsNonExpired;
     }
 
     @Override
     public boolean isEnabled() {
-        return user.isEnabled();
+        return enabled;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof kh.edu.istad.platform.iam.persistence.enitity.UserEntity that){
-            return this.user.getUsername().equals(that.getUsername());
+        if (obj instanceof UserEntity that) {
+            return this.getUsername().equals(that.getUsername());
         }
         return false;
     }

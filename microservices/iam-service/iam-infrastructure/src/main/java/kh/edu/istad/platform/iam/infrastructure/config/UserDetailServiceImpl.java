@@ -1,5 +1,7 @@
 package kh.edu.istad.platform.iam.infrastructure.config;
 
+import kh.edu.istad.platform.iam.domain.dto.AuthUserResult;
+import kh.edu.istad.platform.iam.domain.usecase.user.LoadUserForAuthenticationUseCase;
 import kh.edu.istad.platform.iam.persistence.repository.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,41 +19,15 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class UserDetailServiceImpl implements UserDetailsService {
 
-    private final UserJpaRepository userJpaRepository;
+    private final LoadUserForAuthenticationUseCase loadUserForAuthenticationUseCase;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var user = userJpaRepository.findByUsernameOrEmail(username, username).orElseThrow(
-                () -> new UsernameNotFoundException("Username not found")
-        );
-
-        Set<GrantedAuthority> authorities = new HashSet<>();
-        user.getPermissions()
-                .forEach(
-                        permission -> {
-                            authorities.add(
-                                    new SimpleGrantedAuthority(permission.getPermission())
-                            );
-                        }
-                );
-
-        user.getRoles()
-                .forEach(
-                        role -> {
-                            authorities.add(
-                                    new SimpleGrantedAuthority("ROLE_" + role.getRole())
-                            );
-                        }
-                );
-
-        return new User(
-                user.getUsername(),
-                user.getPassword(),
-                user.isEnabled(),
-                user.isAccountNonExpired(),
-                user.isCredentialsNonExpired(),
-                user.isAccountNonLocked(),
-                authorities
-        );
+        try {
+            AuthUserResult authUser = loadUserForAuthenticationUseCase.execute(username);
+            return new CustomUserDetails(authUser);
+        } catch (Exception ex) {
+            throw new UsernameNotFoundException("User not found: " + username, ex);
+        }
     }
 }

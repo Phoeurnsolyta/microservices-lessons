@@ -74,7 +74,7 @@ public class CreateUserUseCase {
             for (UUID roleUuid : command.roleUuids()) {
                 Role role = roleRepository.findByUuid(roleUuid)
                         .orElseThrow(() -> new IamDomainException("Role not found: " + roleUuid));
-                domainService.validateRoleAssignment(role);
+                iamDomainService.validateRoleAssignment(role);
                 UserRole ur = UserRole.builder()
                         .userId(savedUser.getId())
                         .roleId(role.getId())
