@@ -1,7 +1,10 @@
 @param String clientId
-@param String clientName
-@param String state
-@param java.util.Set<String> scopes
+@param String clientName = null
+@param String state = null
+@param java.util.Set<String> scopesToApprove = null
+@param java.util.Set<String> previouslyApprovedScopes = null
+@param String principalName = null
+@param String userCode = null
 @param org.springframework.security.web.csrf.CsrfToken _csrf = null
 @param kh.edu.istad.platform.iam.web.i18n.I18n msg
 
@@ -32,10 +35,20 @@
 
 <div class="w-full max-w-md bg-[#fafbf9] rounded-[36px] shadow-2xl shadow-slate-300/40 p-8 sm:p-10 border border-[#e5ebe4]">
 
-    <!-- Lotus Icon -->
-    <div class="w-14 h-14 mx-auto mb-4 flex items-center justify-center text-[#4c6552]">
-        <svg class="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 3c-1.5 3-2 5.5-2 8 0 2.5 1 4 2 5 1-1 2-2.5 2-5 0-2.5-.5-5-2-8zm-3.5 3c-1.2 2.2-2.8 4.6-2.5 7 .3 2.4 2 4.2 4 5-.8-1.5-1.2-3.3-1.2-5.2 0-2.3.8-4.5 1.7-6.8zm7 0c.9 2.3 1.7 4.5 1.7 6.8 0 1.9-.4 3.7-1.2 5.2 2-.8 3.7-2.6 4-5 .3-2.4-1.3-4.8-2.5-7zm-10 4.5C4.2 12.2 3 14 3 16c0 2 2 3.5 4.5 3.8-1-1.3-1.6-3-1.5-4.8.1-1.6.8-3.1 1.5-4.5zm13 0c.7 1.4 1.4 2.9 1.5 4.5.1 1.8-.5 3.5-1.5 4.8 2.5-.3 4.5-1.8 4.5-3.8 0-2-1.2-3.8-2.5-5.5z"/>
+    <!-- Language Switcher -->
+    <div class="flex justify-end mb-2">
+        <div class="inline-flex items-center bg-[#dde3dc]/60 p-1 rounded-full text-xs font-semibold">
+            <a href="?client_id=${clientId}&scope=${scopesToApprove != null ? String.join(" ", scopesToApprove) : ""}&state=${state}&lang=en"
+               class="px-3 py-1 rounded-full ${"en".equals(msg.getCurrentLang()) ? "bg-[#5e7c65] text-white shadow-sm" : "text-[#2d3b31]"}">EN</a>
+            <a href="?client_id=${clientId}&scope=${scopesToApprove != null ? String.join(" ", scopesToApprove) : ""}&state=${state}&lang=km"
+               class="px-3 py-1 rounded-full ${"km".equals(msg.getCurrentLang()) ? "bg-[#5e7c65] text-white shadow-sm" : "text-[#2d3b31]"}">KM</a>
+        </div>
+    </div>
+
+    <!-- Lock Icon -->
+    <div class="w-14 h-14 mx-auto mb-3 flex items-center justify-center text-[#4c6552]">
+        <svg class="w-11 h-11" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 00-7.5 0v3h7.5z" clip-rule="evenodd"/>
         </svg>
     </div>
 
@@ -56,13 +69,25 @@
         <!-- Scopes list -->
         <div class="space-y-2">
             <span class="text-xs font-semibold text-[#718575] block">${msg.get("consent.scopesHeader")}</span>
-            @for(String scope : scopes)
-                <label class="flex items-center gap-3 p-3.5 rounded-2xl bg-[#dde3dc]/50 cursor-pointer">
-                    <input type="checkbox" name="scope" value="${scope}" checked
-                           class="w-4 h-4 rounded text-[#5e7c65] border-[#c5d0c4] focus:ring-[#5e7c65]"/>
-                    <span class="text-xs font-semibold text-[#2d3b31]">${scope}</span>
-                </label>
-            @endfor
+            @if(scopesToApprove != null && !scopesToApprove.isEmpty())
+                @for(String scope : scopesToApprove)
+                    <label class="flex items-center gap-3 p-3.5 rounded-2xl bg-[#dde3dc]/50 cursor-pointer">
+                        <input type="checkbox" name="scope" value="${scope}" checked
+                               class="w-4 h-4 rounded text-[#5e7c65] border-[#c5d0c4] focus:ring-[#5e7c65]"/>
+                        <span class="text-xs font-semibold text-[#2d3b31]">${scope}</span>
+                    </label>
+                @endfor
+            @endif
+
+            @if(previouslyApprovedScopes != null && !previouslyApprovedScopes.isEmpty())
+                <div class="text-[11px] text-[#718575] pt-2">Previously approved:</div>
+                @for(String scope : previouslyApprovedScopes)
+                    <div class="flex items-center gap-3 p-3 rounded-2xl bg-[#dde3dc]/25 opacity-70">
+                        <input type="checkbox" checked disabled class="w-4 h-4 rounded text-[#5e7c65]"/>
+                        <span class="text-xs text-[#2d3b31]">${scope} (approved)</span>
+                    </div>
+                @endfor
+            @endif
         </div>
 
         <!-- Buttons -->
