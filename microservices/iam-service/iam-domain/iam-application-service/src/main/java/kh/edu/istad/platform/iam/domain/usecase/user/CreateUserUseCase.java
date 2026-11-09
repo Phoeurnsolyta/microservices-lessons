@@ -33,8 +33,8 @@ public class CreateUserUseCase {
     private final IamDomainService iamDomainService;
 
     public UserResult execute(CreateUserCommand command) {
+        log.info("Creating user with username: {}", command.username());
 
-        log.info("Admin creating user: {}", command.username());
         if (userRepository.existsByUsername(command.username())) {
             throw new IamDomainException("Username already exists");
         }
@@ -43,6 +43,8 @@ public class CreateUserUseCase {
         }
 
         String actor = currentActorProvider.getCurrentActorSub();
+        Instant now = Instant.now();
+
         User.Builder builder = User.builder()
                 .uuid(UUID.randomUUID())
                 .username(command.username())
@@ -56,8 +58,16 @@ public class CreateUserUseCase {
                 .phoneNumber(command.phoneNumber())
                 .zoneinfo(command.zoneinfo())
                 .locale(command.locale())
-                .createdBy(actor)
-                .updatedBy(actor);
+                .enabled(true)
+                .accountNonExpired(true)
+                .accountNonLocked(true)
+                .credentialsNonExpired(true)
+                .failedLoginAttempts(0)
+                .isDeleted(false)
+                .createdAt(now)
+                .createdBy(actor != null ? actor : "system")
+                .updatedAt(now)
+                .updatedBy(actor != null ? actor : "system");
 
         if (command.address() != null) {
             builder.addressStreetAddress(command.address().streetAddress())
@@ -75,17 +85,20 @@ public class CreateUserUseCase {
                 Role role = roleRepository.findByUuid(roleUuid)
                         .orElseThrow(() -> new IamDomainException("Role not found: " + roleUuid));
                 iamDomainService.validateRoleAssignment(role);
-                UserRole ur = UserRole.builder()
+
+                UserRole userRole = UserRole.builder()
                         .userId(savedUser.getId())
                         .roleId(role.getId())
-                        .assignedAt(Instant.now())
-                        .assignedBy(actor)
-                        .reason("Assigned during admin user creation")
+                        .assignedAt(now)
+                        .assignedBy(actor != null ? actor : "system")
+                        .reason("Assigned during user creation")
                         .build();
-                userRepository.saveUserRole(ur);
+                userRepository.saveUserRole(userRole);
+
                 roleSummaries.add(new RoleSummary(role.getUuid(), role.getName(), role.getDescription(), role.isActive()));
             }
         }
+
         return new UserResult(
                 savedUser.getUuid(),
                 savedUser.getUsername(),
@@ -95,10 +108,10 @@ public class CreateUserUseCase {
                 savedUser.getGivenName(),
                 savedUser.getFamilyName(),
                 savedUser.getLocale(),
-                savedUser.isEnabled(), roleSummaries,
+                savedUser.isEnabled(),
+                roleSummaries,
                 savedUser.getCreatedAt(),
                 savedUser.getUpdatedAt()
         );
     }
-
 }

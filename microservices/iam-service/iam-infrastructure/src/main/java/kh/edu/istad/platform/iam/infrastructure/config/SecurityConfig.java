@@ -61,8 +61,11 @@ public class SecurityConfig {
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .with(authorizationServerConfigurer, authorizationServer ->
                         authorizationServer
+                                .authorizationEndpoint(authorizationEndpoint ->
+                                        authorizationEndpoint.consentPage("/oauth2/consent") // Custom JTE Consent Page
+                                )
                                 .oidc(oidc -> oidc
-                                        .clientRegistrationEndpoint(Customizer.withDefaults()) // Enables POST /connect/register
+                                        .clientRegistrationEndpoint(Customizer.withDefaults())
                                 )
                 )
 
@@ -110,8 +113,9 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login",
-                                "/register", "/css/**",
-                                "/js/**", "/images/**").permitAll()
+                                "/login/**",
+                                "/oauth2/authorization/**", "/register",
+                                "/css/**", "/js/**", "/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(config -> config

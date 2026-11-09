@@ -37,9 +37,9 @@ public class RegisterUserUseCase {
         }
         if (userRepository.existsByEmail(command.email().toLowerCase())) {
             throw new IamDomainException("Email is already registered");
-
         }
 
+        Instant now = Instant.now();
         User user = User.builder()
                 .uuid(UUID.randomUUID())
                 .username(command.username())
@@ -53,25 +53,32 @@ public class RegisterUserUseCase {
                 .accountNonExpired(true)
                 .accountNonLocked(true)
                 .credentialsNonExpired(true)
+                .failedLoginAttempts(0)
+                .isDeleted(false)
+                .createdAt(now)
                 .createdBy("self-register")
+                .updatedAt(now)
                 .updatedBy("self-register")
                 .build();
 
         User savedUser = userRepository.save(user);
+
         Role userRole = roleRepository.findByName("USER").orElse(null);
         if (userRole != null) {
             UserRole assignment = UserRole.builder()
                     .userId(savedUser.getId())
                     .roleId(userRole.getId())
-                    .assignedAt(Instant.now())
+                    .assignedAt(now)
                     .assignedBy("system")
                     .reason("Default role assigned upon self-registration")
                     .build();
             userRepository.saveUserRole(assignment);
         }
+
         List<RoleSummary> roles = userRole != null ?
                 List.of(new RoleSummary(userRole.getUuid(), userRole.getName(), userRole.getDescription(), userRole.isActive())) :
                 List.of();
+
         return new UserResult(
                 savedUser.getUuid(),
                 savedUser.getUsername(),
@@ -87,5 +94,4 @@ public class RegisterUserUseCase {
                 savedUser.getUpdatedAt()
         );
     }
-
 }

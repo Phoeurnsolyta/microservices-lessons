@@ -11,32 +11,28 @@ spring:
             client-secret: ${GITHUB_CLIENT_SECRET}
             client-name: GitHub
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - read:user
+              - user:email
           google:
             provider: google
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             client-name: Google
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - openid
+              - profile
+              - email
           facebook:
             provider: facebook
             client-id: ${FACEBOOK_CLIENT_ID}
             client-secret: ${FACEBOOK_CLIENT_SECRET}
             client-name: Facebook
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-          telegram:
-            provider: telegram
-            client-id: ${TELEGRAM_CLIENT_ID}
-            client-secret: ${TELEGRAM_CLIENT_SECRET}
-            client-name: Telegram
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            authorization-grant-type: authorization_code
-            scope: user
-        provider:
-          telegram:
-            authorization-uri: https://oauth.telegram.org/auth
-            token-uri: https://oauth.telegram.org/token
-            user-info-uri: https://api.telegram.org/userinfo
-            user-name-attribute: id
+            scope:
+              - email
+              - public_profile
 
   datasource:
     url: ${URL}
@@ -58,6 +54,12 @@ spring:
 server:
   port: 9000
 
+gg:
+  jte:
+    templateLocation: iam-web/src/main/jte
+    developmentMode: true
 
-
-
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN}
+    username: ${TELEGRAM_BOT_USERNAME}
