@@ -1,9 +1,7 @@
 @param String clientId
 @param String clientName
 @param String state
-@param java.util.Set<String> scopesToApprove
-@param java.util.Set<String> previouslyApprovedScopes
-@param String principalName
+@param java.util.Set<String> scopes
 @param org.springframework.security.web.csrf.CsrfToken _csrf = null
 @param kh.edu.istad.platform.iam.web.i18n.I18n msg
 
@@ -13,203 +11,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${msg.get("consent.title")} - ${msg.get("common.appName")}</title>
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg: #f1f5f9;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #cbd5e1;
-        }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Kantumruy Pro"', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
         }
-
-        body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 480px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .header h1 {
-            font-size: 1.35rem;
-            color: var(--primary);
-        }
-
-        .lang-switch a {
-            text-decoration: none;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            padding: 0.2rem 0.4rem;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-        }
-
-        .lang-switch a.active {
-            background: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
-
-        .client-info {
-            margin-bottom: 1.5rem;
-            font-size: 1.05rem;
-        }
-
-        .client-name {
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .scopes-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .scopes-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 0.75rem;
-            color: var(--text-main);
-        }
-
-        .scope-item {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 0.5rem;
-            background: #f8fafc;
-        }
-
-        .scope-item input[type="checkbox"] {
-            width: 1.1rem;
-            height: 1.1rem;
-            accent-color: var(--primary);
-        }
-
-        .btn-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .btn {
-            padding: 0.75rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-allow {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-allow:hover {
-            background: var(--primary-hover);
-        }
-
-        .btn-cancel {
-            background: #e2e8f0;
-            color: var(--text-main);
-        }
-
-        .btn-cancel:hover {
-            background: #cbd5e1;
-        }
-    </style>
+    </script>
 </head>
-<body>
+<body class="bg-[#f0f3ee] text-[#2d3b31] min-h-screen flex items-center justify-center p-4">
 
-<div class="card">
-    <div class="header">
-        <h1>${msg.get("consent.title")}</h1>
-        <div class="lang-switch">
-            <a href="/oauth2/consent?client_id=${clientId}&scope=${String.join(" ", scopesToApprove)}&state=${state}&lang=en"
-               class="${"en".equals(msg.getCurrentLang()) ? "active" : ""}">EN</a>
-            <a href="/oauth2/consent?client_id=${clientId}&scope=${String.join(" ", scopesToApprove)}&state=${state}&lang=km"
-               class="${"km".equals(msg.getCurrentLang()) ? "active" : ""}">KM</a>
-        </div>
+<div class="w-full max-w-md bg-[#fafbf9] rounded-[36px] shadow-2xl shadow-slate-300/40 p-8 sm:p-10 border border-[#e5ebe4]">
+
+    <!-- Lotus Icon -->
+    <div class="w-14 h-14 mx-auto mb-4 flex items-center justify-center text-[#4c6552]">
+        <svg class="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3c-1.5 3-2 5.5-2 8 0 2.5 1 4 2 5 1-1 2-2.5 2-5 0-2.5-.5-5-2-8zm-3.5 3c-1.2 2.2-2.8 4.6-2.5 7 .3 2.4 2 4.2 4 5-.8-1.5-1.2-3.3-1.2-5.2 0-2.3.8-4.5 1.7-6.8zm7 0c.9 2.3 1.7 4.5 1.7 6.8 0 1.9-.4 3.7-1.2 5.2 2-.8 3.7-2.6 4-5 .3-2.4-1.3-4.8-2.5-7zm-10 4.5C4.2 12.2 3 14 3 16c0 2 2 3.5 4.5 3.8-1-1.3-1.6-3-1.5-4.8.1-1.6.8-3.1 1.5-4.5zm13 0c.7 1.4 1.4 2.9 1.5 4.5.1 1.8-.5 3.5-1.5 4.8 2.5-.3 4.5-1.8 4.5-3.8 0-2-1.2-3.8-2.5-5.5z"/>
+        </svg>
     </div>
 
-    <p class="client-info">
-        ${msg.get("consent.clientWantsAccess", clientName != null ? clientName : clientId)}
-    </p>
+    <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-[#2d3b31]">${msg.get("consent.title")}</h1>
+        <p class="text-xs text-[#718575] mt-1.5">
+            ${msg.get("consent.clientWantsAccess", clientName != null ? clientName : clientId)}
+        </p>
+    </div>
 
-    <form action="/oauth2/authorize" method="post">
+    <form action="/oauth2/authorize" method="post" class="space-y-6">
         @if(_csrf != null)
-            <input type="hidden" name="${_csrf.getParameterName()}" value="${_csrf.getToken()}">
+            <input type="hidden" name="${_csrf.getParameterName()}" value="${_csrf.getToken()}"/>
         @endif
-        <input type="hidden" name="client_id" value="${clientId}">
-        <input type="hidden" name="state" value="${state}">
+        <input type="hidden" name="client_id" value="${clientId}"/>
+        <input type="hidden" name="state" value="${state}"/>
 
-        <div class="scopes-section">
-            <div class="scopes-title">${msg.get("consent.scopesHeader")}</div>
-
-            @if(scopesToApprove != null && !scopesToApprove.isEmpty())
-                @for(var scope : scopesToApprove)
-                    <div class="scope-item">
-                        <input type="checkbox" name="scope" value="${scope}" id="${scope}" checked>
-                        <label for="${scope}" style="font-weight: 500;">${scope}</label>
-                    </div>
-                @endfor
-            @endif
-
-            @if(previouslyApprovedScopes != null && !previouslyApprovedScopes.isEmpty())
-                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem; margin-bottom: 0.5rem;">
-                    Previously approved:
-                </div>
-                @for(var scope : previouslyApprovedScopes)
-                    <div class="scope-item" style="opacity: 0.7;">
-                        <input type="checkbox" name="scope" value="${scope}" id="prev_${scope}" checked disabled>
-                        <label for="prev_${scope}">${scope} (approved)</label>
-                    </div>
-                @endfor
-            @endif
+        <!-- Scopes list -->
+        <div class="space-y-2">
+            <span class="text-xs font-semibold text-[#718575] block">${msg.get("consent.scopesHeader")}</span>
+            @for(String scope : scopes)
+                <label class="flex items-center gap-3 p-3.5 rounded-2xl bg-[#dde3dc]/50 cursor-pointer">
+                    <input type="checkbox" name="scope" value="${scope}" checked
+                           class="w-4 h-4 rounded text-[#5e7c65] border-[#c5d0c4] focus:ring-[#5e7c65]"/>
+                    <span class="text-xs font-semibold text-[#2d3b31]">${scope}</span>
+                </label>
+            @endfor
         </div>
 
-        <div class="btn-row">
-            <button type="submit" name="consent_action" value="approve" class="btn btn-allow">
-                ${msg.get("consent.allow")}
-            </button>
-            <button type="submit" name="consent_action" value="cancel" class="btn btn-cancel">
+        <!-- Buttons -->
+        <div class="flex gap-3 pt-2">
+            <button type="submit" name="consent_action" value="cancel"
+                    class="w-1/2 py-3 border border-[#dde3dc] hover:bg-[#dde3dc]/50 text-xs font-semibold text-[#718575] rounded-full transition-all">
                 ${msg.get("consent.cancel")}
+            </button>
+            <button type="submit" name="consent_action" value="approve"
+                    class="w-1/2 py-3 bg-[#5e7c65] hover:bg-[#4e6b55] text-xs font-semibold text-white rounded-full shadow-md transition-all">
+                ${msg.get("consent.allow")}
             </button>
         </div>
     </form>
 </div>
-
 </body>
 </html>

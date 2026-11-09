@@ -11,257 +11,160 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${msg.get("login.title")} - ${msg.get("common.appName")}</title>
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg: #f1f5f9;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #cbd5e1;
-            --danger: #ef4444;
-            --success: #22c55e;
-        }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Kantumruy Pro"', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
         }
-
-        .auth-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 440px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .lang-switch a {
-            text-decoration: none;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            padding: 0.2rem 0.4rem;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-        }
-
-        .lang-switch a.active {
-            background: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
-
-        .alert {
-            padding: 0.75rem 1rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .alert-success {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.35rem;
-            color: var(--text-main);
-        }
-
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 0.65rem 0.85rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 0.95rem;
-        }
-
-        input:focus {
-            outline: 2px solid var(--primary);
-            border-color: transparent;
-        }
-
-        .btn-primary {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.75rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 0.5rem;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 1.5rem 0;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .divider span {
-            padding: 0 0.5rem;
-        }
-
-        .social-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .btn-social {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.65rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            text-decoration: none;
-            color: var(--text-main);
-            font-size: 0.9rem;
-            font-weight: 500;
-            background: #fff;
-            transition: background 0.15s;
-        }
-
-        .btn-social:hover {
-            background: #f8fafc;
-        }
-
-        .footer {
-            margin-top: 1.5rem;
-            text-align: center;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .footer a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-    </style>
+    </script>
 </head>
-<body>
-<div class="auth-card">
-    <div class="header">
-        <h1>${msg.get("login.title")}</h1>
-        <div class="lang-switch">
-            <a href="/login?lang=en" class="${"en".equals(msg.getCurrentLang()) ? "active" : ""}">EN</a>
-            <a href="/login?lang=km" class="${"km".equals(msg.getCurrentLang()) ? "active" : ""}">KM</a>
+<body class="bg-[#f0f3ee] text-[#2d3b31] min-h-screen flex items-center justify-center p-4">
+
+<!-- Card Container -->
+<div class="w-full max-w-[420px] bg-[#fafbf9] rounded-[36px] shadow-2xl shadow-slate-300/40 p-8 sm:p-10 border border-[#e5ebe4]">
+
+    <!-- Language Switcher -->
+    <div class="flex justify-end mb-2">
+        <div class="inline-flex items-center bg-[#dde3dc]/60 p-1 rounded-full text-xs font-semibold">
+            <a href="?lang=en" class="px-3 py-1 rounded-full transition-all ${"en".equals(msg.getCurrentLang()) ? "bg-[#5e7c65] text-white shadow-sm" : "text-[#2d3b31] hover:text-black"}">EN</a>
+            <a href="?lang=km" class="px-3 py-1 rounded-full transition-all ${"km".equals(msg.getCurrentLang()) ? "bg-[#5e7c65] text-white shadow-sm" : "text-[#2d3b31] hover:text-black"}">KM</a>
         </div>
     </div>
+
+    <!-- Lock Icon & Header -->
+    <div class="text-center mb-8">
+        <div class="w-14 h-14 mx-auto mb-3 flex items-center justify-center text-[#4c6552]">
+            <!-- Clean Modern Padlock SVG -->
+            <svg class="w-11 h-11" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 00-7.5 0v3h7.5z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-[#2d3b31]">${msg.get("login.title")}</h1>
+        <p class="text-sm text-[#667a6c] mt-1.5">${msg.get("login.subtitle")}</p>
+    </div>
+
+    <!-- Error / Logout Alerts -->
     @if(hasError)
-        <div class="alert alert-danger">${msg.get("login.invalidCredentials")}</div>
+        <div class="mb-5 p-3.5 text-xs rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 text-center font-medium">
+            ${msg.get("login.invalidCredentials")}
+        </div>
     @endif
+
     @if(isLogout)
-        <div class="alert alert-success">${msg.get("login.loggedOut")}</div>
+        <div class="mb-5 p-3.5 text-xs rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-center font-medium">
+            ${msg.get("login.loggedOut")}
+        </div>
     @endif
-    @if(isRegistered)
-        <div class="alert alert-success">Registration successful! Please sign in with your credentials.</div>
-    @endif
-    <form action="/login" method="post">
+
+    <!-- Login Form -->
+    <form action="/login" method="post" class="space-y-4">
         @if(_csrf != null)
-            <input type="hidden" name="${_csrf.getParameterName()}" value="${_csrf.getToken()}">
+            <input type="hidden" name="${_csrf.getParameterName()}" value="${_csrf.getToken()}"/>
         @endif
-        <div class="form-group">
-            <label for="username">${msg.get("login.usernameOrEmail")}</label>
-            <input type="text" id="username" name="username" required autofocus autocomplete="username">
+
+        <!-- Username / Email Field -->
+        <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-[#718575]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </span>
+            <input type="text" id="username" name="username" required autofocus
+                   class="w-full bg-[#dde3dc]/80 focus:bg-[#dde3dc] text-[#2d3b31] placeholder-[#798e7e] text-sm rounded-2xl py-3.5 pl-12 pr-4 outline-none transition-all"
+                   placeholder="${msg.get("login.usernameOrEmail")}"/>
         </div>
-        <div class="form-group">
-            <label for="password">${msg.get("login.password")}</label>
-            <input type="password" id="password" name="password" required autocomplete="current-password">
+
+        <!-- Password Field -->
+        <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-[#718575]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </span>
+            <input type="password" id="password" name="password" required
+                   class="w-full bg-[#dde3dc]/80 focus:bg-[#dde3dc] text-[#2d3b31] placeholder-[#798e7e] text-sm rounded-2xl py-3.5 pl-12 pr-4 outline-none transition-all"
+                   placeholder="${msg.get("login.password")}"/>
         </div>
-        <button type="submit" class="btn-primary">${msg.get("login.submit")}</button>
+
+        <!-- Submit Button (Rounded Pill) -->
+        <button type="submit"
+                class="w-full mt-2 py-3.5 bg-[#5e7c65] hover:bg-[#4e6b55] active:scale-[0.99] text-white font-medium text-base rounded-full shadow-md shadow-[#5e7c65]/30 transition-all">
+            ${msg.get("login.submit")}
+        </button>
     </form>
-    <div class="divider">
-        <span>${msg.get("login.or")}</span>
+
+    <!-- Divider with 'or' -->
+    <div class="relative my-7">
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-[#d8e0d7]"></div></div>
+        <div class="relative flex justify-center text-xs text-[#718575]"><span class="bg-[#fafbf9] px-3 font-medium">${msg.get("login.or")}</span></div>
     </div>
-    <div class="social-buttons">
-        <a href="/oauth2/authorization/google" class="btn-social">
-            <span>🌐</span> ${msg.get("login.continueWith", "Google")}
-        </a>
-        <a href="/oauth2/authorization/github" class="btn-social">
-            <span>🐙</span> ${msg.get("login.continueWith", "GitHub")}
-        </a>
-        <a href="/oauth2/authorization/facebook" class="btn-social">
-            <span>📘</span> ${msg.get("login.continueWith", "Facebook")}
+
+    <!-- Social Icons Row (IN ONE LINE) -->
+    <div class="flex items-center justify-center gap-5">
+        <!-- Google -->
+        <a href="/oauth2/authorization/google" title="Google"
+           class="w-12 h-12 rounded-full bg-[#dde3dc]/60 hover:bg-[#dde3dc] flex items-center justify-center transition-all hover:scale-105 active:scale-95">
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
         </a>
 
-        <!-- Telegram Social Login: official widget if username set, otherwise fallback button -->
-        @if(telegramBotUsername != null && !telegramBotUsername.isBlank())
-            <div style="display: flex; justify-content: center; margin-top: 0.25rem;">
-                <script async src="https://telegram.org/js/telegram-widget.js?22"
-                        data-telegram-login="${telegramBotUsername}"
-                        data-size="large"
-                        data-auth-url="/login/telegram/callback"
-                        data-request-access="write">
-                </script>
-            </div>
-        @else
-            <a href="/oauth2/authorization/telegram" class="btn-social">
-                <span>✈️</span> ${msg.get("login.continueWith", "Telegram")}
-            </a>
-        @endif
+        <!-- GitHub -->
+        <a href="/oauth2/authorization/github" title="GitHub"
+           class="w-12 h-12 rounded-full bg-[#dde3dc]/60 hover:bg-[#dde3dc] flex items-center justify-center transition-all hover:scale-105 active:scale-95 text-[#2d3b31]">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 16 16">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+        </a>
+
+        <!-- Facebook -->
+        <a href="/oauth2/authorization/facebook" title="Facebook"
+           class="w-12 h-12 rounded-full bg-[#dde3dc]/60 hover:bg-[#dde3dc] flex items-center justify-center transition-all hover:scale-105 active:scale-95 text-[#1877F2]">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+        </a>
+
+        <!-- Telegram -->
+        <a href="javascript:void(0)" onclick="triggerTelegramLogin()" title="Telegram"
+           class="w-12 h-12 rounded-full bg-[#dde3dc]/60 hover:bg-[#dde3dc] flex items-center justify-center transition-all hover:scale-105 active:scale-95 text-[#2AABEE]">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+            </svg>
+        </a>
     </div>
-    <div class="footer">
-        ${msg.get("login.noAccount")} <a href="/register">${msg.get("login.registerLink")}</a>
+
+    <!-- Footer Link -->
+    <div class="mt-8 text-center text-xs text-[#718575]">
+        ${msg.get("login.noAccount")}
+        <a href="/register" class="text-[#4c6552] font-bold hover:underline ml-1">${msg.get("login.registerLink")}</a>
     </div>
 </div>
+
+<!-- Telegram Handler -->
+<script>
+    const botName = "${telegramBotUsername}";
+    function triggerTelegramLogin() {
+        if (botName) {
+            window.open("https://t.me/" + botName, "_blank");
+        }
+    }
+</script>
 </body>
 </html>

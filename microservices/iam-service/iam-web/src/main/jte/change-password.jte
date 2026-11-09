@@ -1,8 +1,7 @@
-@param kh.edu.istad.platform.iam.web.dto.ChangePasswordForm form
+@param kh.edu.istad.platform.iam.web.dto.ChangePasswordForm form = null
 @param String successMessage = null
 @param String errorMessage = null
 @param String activeTab = "changePassword"
-@param org.springframework.security.web.csrf.CsrfToken _csrf = null
 @param kh.edu.istad.platform.iam.web.i18n.I18n msg
 
 <!DOCTYPE html>
@@ -11,204 +10,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${msg.get("changePassword.title")} - ${msg.get("common.appName")}</title>
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --danger: #ef4444;
-            --success: #22c55e;
-        }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Kantumruy Pro"', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
         }
-
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            padding: 2rem 1rem;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .nav-tab {
-            text-decoration: none;
-            color: var(--text-muted);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .nav-tab.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.35rem;
-        }
-
-        input[type="password"] {
-            width: 100%;
-            padding: 0.65rem 0.85rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.75rem;
-            font-size: 1rem;
-            cursor: pointer;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-        }
-
-        .alert {
-            padding: 0.75rem 1rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .alert-success {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .lang-switch a {
-            text-decoration: none;
-            color: var(--text-muted);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            border: 1px solid var(--border);
-            font-size: 0.85rem;
-        }
-
-        .lang-switch a.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-    </style>
+    </script>
 </head>
-<body>
+<body class="bg-[#f0f3ee] text-[#2d3b31] min-h-screen p-4 sm:p-8">
 
-<div class="container">
-    <div class="header">
-        <div>
-            <h1 style="color: var(--primary); font-size: 1.75rem;">${msg.get("changePassword.title")}</h1>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">${msg.get("changePassword.subtitle")}</p>
-        </div>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-            <div class="lang-switch">
-                <a href="/profile/password?lang=en" class="${"en".equals(msg.getCurrentLang()) ? "active" : ""}">EN</a>
-                <a href="/profile/password?lang=km" class="${"km".equals(msg.getCurrentLang()) ? "active" : ""}">KM</a>
+<div class="max-w-xl mx-auto space-y-6">
+
+    <!-- Navigation Tabs -->
+    <nav class="flex items-center gap-2 overflow-x-auto pb-2">
+        <a href="/" class="px-5 py-2.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#fafbf9] border border-[#e5ebe4] text-[#718575] hover:text-[#2d3b31]">
+            ${msg.get("nav.overview")}
+        </a>
+        <a href="/profile/edit" class="px-5 py-2.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#fafbf9] border border-[#e5ebe4] text-[#718575] hover:text-[#2d3b31]">
+            ${msg.get("nav.editProfile")}
+        </a>
+        <a href="/profile/password" class="px-5 py-2.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#5e7c65] text-white shadow-sm">
+            ${msg.get("nav.changePassword")}
+        </a>
+        <a href="/profile/accounts" class="px-5 py-2.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#fafbf9] border border-[#e5ebe4] text-[#718575] hover:text-[#2d3b31]">
+            ${msg.get("nav.linkedAccounts")}
+        </a>
+        <a href="/profile/apps" class="px-5 py-2.5 rounded-full text-xs font-medium whitespace-nowrap bg-[#fafbf9] border border-[#e5ebe4] text-[#718575] hover:text-[#2d3b31]">
+            ${msg.get("nav.connectedApps")}
+        </a>
+    </nav>
+
+    <div class="bg-[#fafbf9] border border-[#e5ebe4] rounded-3xl p-8 shadow-sm">
+        <h2 class="text-xl font-bold text-[#2d3b31]">${msg.get("changePassword.title")}</h2>
+        <p class="text-xs text-[#718575] mt-1 mb-6">${msg.get("changePassword.subtitle")}</p>
+
+        @if(successMessage != null)
+            <div class="mb-5 p-3.5 text-xs rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200">
+                ${successMessage}
             </div>
-            <a href="/"
-               style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem;">${msg.get("common.back")}</a>
-        </div>
-    </div>
+        @endif
 
-    <div class="nav-tabs">
-        <a href="/" class="nav-tab">${msg.get("nav.overview")}</a>
-        <a href="/profile/edit" class="nav-tab">${msg.get("nav.editProfile")}</a>
-        <a href="/profile/password" class="nav-tab active">${msg.get("nav.changePassword")}</a>
-        <a href="/profile/accounts" class="nav-tab">${msg.get("nav.linkedAccounts")}</a>
-        <a href="/profile/apps" class="nav-tab">${msg.get("nav.connectedApps")}</a>
-    </div>
+        @if(errorMessage != null)
+            <div class="mb-5 p-3.5 text-xs rounded-2xl bg-rose-50 text-rose-800 border border-rose-200">
+                ${errorMessage}
+            </div>
+        @endif
 
-    @if(successMessage != null)
-        <div class="alert alert-success">${successMessage}</div>
-    @endif
-    @if(errorMessage != null)
-        <div class="alert alert-danger">${errorMessage}</div>
-    @endif
-
-    <div class="card">
-        <form action="/profile/password" method="post">
-            @if(_csrf != null)
-                <input type="hidden" name="${_csrf.getParameterName()}" value="${_csrf.getToken()}">
-            @endif
-
-            <div class="form-group">
-                <label for="currentPassword">${msg.get("changePassword.currentPassword")}</label>
-                <input type="password" id="currentPassword" name="currentPassword" required>
+        <form action="/profile/password" method="post" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-[#718575] mb-1">${msg.get("changePassword.currentPassword")}</label>
+                <input type="password" name="currentPassword" required
+                       class="w-full bg-[#dde3dc]/80 focus:bg-[#dde3dc] text-[#2d3b31] text-sm rounded-2xl py-3.5 px-4 outline-none"/>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-[#718575] mb-1">${msg.get("changePassword.newPassword")}</label>
+                <input type="password" name="newPassword" required
+                       class="w-full bg-[#dde3dc]/80 focus:bg-[#dde3dc] text-[#2d3b31] text-sm rounded-2xl py-3.5 px-4 outline-none"/>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-[#718575] mb-1">${msg.get("changePassword.confirmNewPassword")}</label>
+                <input type="password" name="confirmPassword" required
+                       class="w-full bg-[#dde3dc]/80 focus:bg-[#dde3dc] text-[#2d3b31] text-sm rounded-2xl py-3.5 px-4 outline-none"/>
             </div>
 
-            <div class="form-group">
-                <label for="newPassword">${msg.get("changePassword.newPassword")}</label>
-                <input type="password" id="newPassword" name="newPassword" required>
+            <div class="pt-3">
+                <button type="submit" class="w-full py-3.5 bg-[#5e7c65] hover:bg-[#4e6b55] text-white text-sm font-semibold rounded-full shadow-md transition-all">
+                    ${msg.get("changePassword.submit")}
+                </button>
             </div>
-
-            <div class="form-group">
-                <label for="confirmPassword">${msg.get("changePassword.confirmNewPassword")}</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required>
-            </div>
-
-            <button type="submit" class="btn-primary"
-                    style="margin-top: 0.5rem;">${msg.get("changePassword.submit")}</button>
         </form>
     </div>
 </div>
-
 </body>
 </html>

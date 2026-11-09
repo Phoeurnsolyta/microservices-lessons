@@ -1,0 +1,240 @@
+{
+  "info": {
+    "name": "Iam Service OAuth2",
+    "description": "Comprehensive Postman test collection for ISTAD IAM Service covering OAuth 2.1 / OIDC 1.0, Dynamic Client Registration, Users, Roles, Permissions, and Self-Service APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientId",
+      "value": "oidc-client",
+      "type": "string"
+    },
+    {
+      "key": "clientSecret",
+      "value": "secret",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication & OAuth2",
+      "item": [
+        {
+          "name": "Client Credentials Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid profile email"
+                }
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{clientId}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{clientSecret}}"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/oauth2/token"
+          }
+        },
+        {
+          "name": "Dynamic Client Registration (DCR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"My Third-Party App\",\n  \"redirect_uris\": [\"https://oauth.pstmn.io/v1/callback\"],\n  \"grant_types\": [\"authorization_code\", \"refresh_token\"],\n  \"scope\": \"openid profile email\"\n}"
+            },
+            "url": "{{baseUrl}}/connect/register"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. REST API - Me Endpoint",
+      "item": [
+        {
+          "name": "Get Current User Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. REST API - Users",
+      "item": [
+        {
+          "name": "List Users (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users?page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"P@ssword123\",\n  \"givenName\": \"Test\",\n  \"familyName\": \"User\",\n  \"locale\": \"en\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. REST API - Roles",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/roles"
+          }
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"STAFF\",\n  \"description\": \"Staff member role with limited privileges\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/roles"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. REST API - Permissions",
+      "item": [
+        {
+          "name": "List Permissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/permissions"
+          }
+        }
+      ]
+    }
+  ]
+}
