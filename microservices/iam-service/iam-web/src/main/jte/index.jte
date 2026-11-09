@@ -1,5 +1,6 @@
 @param kh.edu.istad.platform.iam.domain.dto.UserResult user
 @param kh.edu.istad.platform.iam.domain.dto.UserAuthoritiesResult authorities
+@param String activeTab = "overview"
 @param org.springframework.security.web.csrf.CsrfToken _csrf = null
 @param kh.edu.istad.platform.iam.web.i18n.I18n msg
 
@@ -29,7 +30,7 @@
         }
 
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
             line-height: 1.5;
@@ -45,7 +46,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid var(--border);
         }
@@ -88,13 +89,35 @@
             padding: 0.5rem 1rem;
             border-radius: 6px;
             cursor: pointer;
-            text-decoration: none;
             font-size: 0.875rem;
             font-weight: 500;
         }
 
         .btn-logout:hover {
             background: #dc2626;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
         }
 
         .grid {
@@ -187,6 +210,15 @@
                 <button type="submit" class="btn-logout">${msg.get("common.logout")}</button>
             </form>
         </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <a href="/" class="nav-tab active">${msg.get("nav.overview")}</a>
+        <a href="/profile/edit" class="nav-tab">${msg.get("nav.editProfile")}</a>
+        <a href="/profile/password" class="nav-tab">${msg.get("nav.changePassword")}</a>
+        <a href="/profile/accounts" class="nav-tab">${msg.get("nav.linkedAccounts")}</a>
+        <a href="/profile/apps" class="nav-tab">${msg.get("nav.connectedApps")}</a>
     </div>
 
     @if(user != null)
