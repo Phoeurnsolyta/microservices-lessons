@@ -53,10 +53,29 @@ public class InitRegisteredClient {
                 .tokenSettings(tokenSettings)
                 .build();
 
+        RegisteredClient frontBffClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("front-bff-client")
+//                .clientSecret(passwordEncoder.encode("secret"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .redirectUri("http://127.0.0.1:8080/login/oauth2/code/front-bff-client")
+                .postLogoutRedirectUri("http://localhost:9999")
+                .scope(OidcScopes.OPENID)
+                .scope(OidcScopes.PROFILE)
+                .clientSettings(clientSettings)
+                .tokenSettings(tokenSettings)
+                .build();
+
         var client = registeredClientRepository.findByClientId("oidc-client");
+        var client2 = registeredClientRepository.findByClientId("front-bff-client");
 
         if(client == null){
             registeredClientRepository.save(oidcClient);
+        }
+
+        if(client2 == null){
+            registeredClientRepository.save(frontBffClient);
         }
     }
 }

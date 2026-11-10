@@ -32,7 +32,25 @@ spring:
               uri: http://localhost:3000
               predicates:
                 - Path=/**
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000
+      client:
+        provider:
+          iam-service:
+            issuer-uri: http://localhost:9000
+        registration:
+          front-bff-client:
+            provider: iam-service
+            client-id: front-bff-client
+            client-authentication-method: none
+            authorization-grant-type: authorization_code
+            redirect-uri: http://127.0.0.1:8080/login/oauth2/code/front-bff-client
+            scope:
+              - openid
+              - profile
 
     consul:
       discovery:
@@ -40,8 +58,6 @@ spring:
         prefer-ip-address: true
         service-name: ${spring.application.name}
         instance-id: ${spring.application.name}-${random.value}
-
-
 
 management:
   endpoints:

@@ -3,6 +3,8 @@ spring:
     name: iam-service
   security:
     oauth2:
+      authorizationserver:
+        issuer: http://localhost:9000
       client:
         registration:
           github:
