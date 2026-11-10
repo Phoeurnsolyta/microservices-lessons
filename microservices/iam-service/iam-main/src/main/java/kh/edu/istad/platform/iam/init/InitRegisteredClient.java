@@ -59,7 +59,7 @@ public class InitRegisteredClient {
                 .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .redirectUri("http://127.0.0.1:8080/login/oauth2/code/front-bff-client")
+                .redirectUri("http://localhost:9999/login/oauth2/code/front-bff-client")
                 .postLogoutRedirectUri("http://localhost:9999")
                 .scope(OidcScopes.OPENID)
                 .scope(OidcScopes.PROFILE)

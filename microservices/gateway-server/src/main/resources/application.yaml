@@ -47,7 +47,7 @@ spring:
             client-id: front-bff-client
             client-authentication-method: none
             authorization-grant-type: authorization_code
-            redirect-uri: http://127.0.0.1:8080/login/oauth2/code/front-bff-client
+            redirect-uri: http://localhost:9999/login/oauth2/code/front-bff-client
             scope:
               - openid
               - profile
