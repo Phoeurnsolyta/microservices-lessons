@@ -87,18 +87,24 @@ public class UserRepositoryAdapter implements UserRepository {
 
             Sort.Direction direction =
                     parts.length > 1 && parts[1].trim().equalsIgnoreCase("desc")
-                    ? Sort.Direction.DESC
-                    : Sort.Direction.ASC;
+                            ? Sort.Direction.DESC
+                            : Sort.Direction.ASC;
             sort = Sort.by(direction, property);
         }
 
         Pageable pageable = PageRequest.of(query.page(), query.size(), sort);
 
-        Page<UserEntity> page = userJpaRepository
-                .searchUsers(
-                        query.search(),
-                        query.enabled(), pageable
-                );
+        Page<UserEntity> page;
+        boolean hasSearch = query.search() != null && !query.search().isBlank();
+
+        if (hasSearch) {
+            String searchPattern = "%" + query.search().trim().toLowerCase() + "%";
+            page = userJpaRepository.searchUsers(searchPattern, query.enabled(), pageable);
+        } else if (query.enabled() != null) {
+            page = userJpaRepository.findByEnabledAndIsDeletedFalse(query.enabled(), pageable);
+        } else {
+            page = userJpaRepository.findByIsDeletedFalse(pageable);
+        }
 
         List<UserSummary> content = page.getContent().stream()
                 .map(userPersistenceMapper::toSummary)

@@ -12,6 +12,10 @@ import kh.edu.istad.platform.iam.persistence.mapper.RolePersistenceMapper;
 import kh.edu.istad.platform.iam.persistence.repository.RoleJpaRepository;
 import kh.edu.istad.platform.iam.persistence.repository.RolePermissionJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -54,7 +58,32 @@ public class RoleRepositoryAdapter implements RoleRepository {
 
     @Override
     public PageResult<RoleSummary> findAll(RoleFilterQuery query) {
-        return null;
+        Sort sort = Sort.by(Sort.Direction.ASC, "name");
+
+        if (query.sort() != null && !query.sort().isBlank()) {
+            String[] parts = query.sort().split(",");
+            String property = parts[0].trim();
+            Sort.Direction direction = parts.length > 1 && parts[1].trim().equalsIgnoreCase("desc")
+                    ? Sort.Direction.DESC
+                    : Sort.Direction.ASC;
+            sort = Sort.by(direction, property);
+        }
+
+        Pageable pageable = PageRequest.of(query.page(), query.size(), sort);
+        Page<RoleEntity> page = roleJpaRepository.findAll(pageable);
+
+        List<RoleSummary> content = page.getContent().stream()
+                .map(rolePersistenceMapper::toSummary)
+                .toList();
+
+        return new PageResult<>(
+                content,
+                new PageResult.PageMetadata(
+                        page.getNumber(),
+                        page.getSize(),
+                        page.getTotalElements(),
+                        page.getTotalPages())
+        );
     }
 
     @Override

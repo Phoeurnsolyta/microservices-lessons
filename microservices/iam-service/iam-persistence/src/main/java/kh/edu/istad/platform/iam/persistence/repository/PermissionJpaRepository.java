@@ -18,14 +18,19 @@ public interface PermissionJpaRepository extends JpaRepository<PermissionEntity,
 
     boolean existsByName(String name);
 
+    Page<PermissionEntity> findByIsDeletedFalse(Pageable pageable);
+
+    Page<PermissionEntity> findByResourceAndIsDeletedFalse(String resource, Pageable pageable);
+
     @Query("""
                 SELECT p FROM PermissionEntity p
                 WHERE (:resource IS NULL OR p.resource = :resource)
-                  AND (:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))
-                       OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))
+                  AND (LOWER(p.name) LIKE :searchPattern OR LOWER(p.description) LIKE :searchPattern)
                   AND p.isDeleted = false
             """)
     Page<PermissionEntity> searchPermissions(
             @Param("resource") String resource,
-            @Param("search") String search, Pageable pageable);
+            @Param("searchPattern") String searchPattern,
+            Pageable pageable
+    );
 }

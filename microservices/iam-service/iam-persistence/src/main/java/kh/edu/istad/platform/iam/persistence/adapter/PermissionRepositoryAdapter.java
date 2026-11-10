@@ -69,11 +69,22 @@ public class PermissionRepositoryAdapter implements PermissionRepository {
 
         Pageable pageable = PageRequest.of(query.page(), query.size(), sort);
 
-        Page<PermissionEntity> page = permissionJpaRepository
-                .searchPermissions(
-                        query.resource(),
-                        query.search(), pageable
-                );
+        Page<PermissionEntity> page;
+        boolean hasSearch = query.search() != null && !query.search().isBlank();
+        boolean hasResource = query.resource() != null && !query.resource().isBlank();
+
+        if (hasSearch) {
+            String searchPattern = "%" + query.search().trim().toLowerCase() + "%";
+            page = permissionJpaRepository.searchPermissions(
+                    hasResource ? query.resource().trim() : null,
+                    searchPattern,
+                    pageable
+            );
+        } else if (hasResource) {
+            page = permissionJpaRepository.findByResourceAndIsDeletedFalse(query.resource().trim(), pageable);
+        } else {
+            page = permissionJpaRepository.findByIsDeletedFalse(pageable);
+        }
 
         List<PermissionResult> content = page.getContent().stream()
                 .map(permissionPersistenceMapper::toResult)

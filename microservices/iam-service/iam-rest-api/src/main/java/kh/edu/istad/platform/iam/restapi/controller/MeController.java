@@ -36,7 +36,6 @@ public class MeController {
 
     @GetMapping
     public UserResponse getMe(@AuthenticationPrincipal Jwt jwt) {
-
         UUID userUuid = UUID.fromString(jwt.getSubject());
         return userWebMapper.toResponse(getUserUseCase.execute(userUuid));
     }
@@ -65,7 +64,7 @@ public class MeController {
                         request.currentPassword(),
                         request.newPassword(),
                         request.confirmPassword()
-        ));
+                ));
     }
 
     @GetMapping("/identities")
@@ -80,7 +79,7 @@ public class MeController {
     @DeleteMapping("/identities/{identityUuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void unlinkIdentity(
-            @AuthenticationPrincipal Jwt jwt, @PathVariable UUID identityUuid) {
+            @AuthenticationPrincipal Jwt jwt, @PathVariable("identityUuid") UUID identityUuid) {
         UUID userUuid = UUID.fromString(jwt.getSubject());
         unlinkIdentityUseCase.execute(userUuid, identityUuid);
     }

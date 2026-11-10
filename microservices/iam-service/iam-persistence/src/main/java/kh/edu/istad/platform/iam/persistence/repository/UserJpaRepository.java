@@ -27,14 +27,22 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
 
     boolean existsByEmail(String email);
 
+    Page<UserEntity> findByIsDeletedFalse(Pageable pageable);
+
+    Page<UserEntity> findByEnabledAndIsDeletedFalse(boolean enabled, Pageable pageable);
+
     @Query("""
         SELECT u FROM UserEntity u
-        WHERE (:search IS NULL OR LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%'))
-               OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))
-               OR LOWER(u.givenName) LIKE LOWER(CONCAT('%', :search, '%'))
-               OR LOWER(u.familyName) LIKE LOWER(CONCAT('%', :search, '%')))
+        WHERE (LOWER(u.username) LIKE :searchPattern
+               OR LOWER(u.email) LIKE :searchPattern
+               OR LOWER(u.givenName) LIKE :searchPattern
+               OR LOWER(u.familyName) LIKE :searchPattern)
           AND (:enabled IS NULL OR u.enabled = :enabled)
           AND u.isDeleted = false
     """)
-    Page<UserEntity> searchUsers(String search, Boolean enabled, Pageable pageable);
+    Page<UserEntity> searchUsers(
+            @Param("searchPattern") String searchPattern,
+            @Param("enabled") Boolean enabled,
+            Pageable pageable
+    );
 }
