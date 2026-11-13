@@ -1,7 +1,13 @@
 server:
   port: 8082
+  forward-headers-strategy: framework
 
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000
   application:
     name: business-service
   config:

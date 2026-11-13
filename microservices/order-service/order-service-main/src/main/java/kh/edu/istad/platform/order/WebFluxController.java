@@ -7,6 +7,8 @@ import kh.edu.istad.platform.order.domain.port.out.CustomerServiceClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +24,17 @@ import java.util.Map;
 public class WebFluxController {
 
     private final CustomerServiceClient customerServiceClient;
+
+    @GetMapping("/jwt")
+    public Map<String, Object> demo(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return Map.of(
+                "message",
+                "Order Service",
+                "jwt order service's token", jwt.getTokenValue()
+        );
+    }
 
     @GetMapping("customers")
     public Flux<CustomerServiceClient.CustomerResponse> getCustomers() {
