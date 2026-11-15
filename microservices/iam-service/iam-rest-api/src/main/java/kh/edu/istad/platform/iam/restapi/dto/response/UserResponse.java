@@ -10,6 +10,8 @@ public record UserResponse(
         String email,
         boolean emailVerified,
         String name,
+        String givenName,
+        String familyName,
         String locale,
         boolean enabled,
         List<UserRoleSummaryResponse> roles,

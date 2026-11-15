@@ -1,8 +1,9 @@
 import axios from 'axios';
-import { useAuthStore } from '../store/useAuthStore';
+import {useAuthStore} from '../store/useAuthStore';
 
 const apiClient = axios.create({
     baseURL: '',
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -11,8 +12,12 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
     (config) => {
+        const isPublicAuthEndpoint =
+            config.url?.includes('/api/auth/login') ||
+            config.url?.includes('/api/auth/register');
+
         const token = useAuthStore.getState().accessToken;
-        if (token) {
+        if (token && !isPublicAuthEndpoint) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -32,7 +37,6 @@ apiClient.interceptors.response.use(
         let errorMessage = 'An unexpected error occurred. Please try again.';
         if (error.response?.data) {
             const data = error.response.data;
-            // Spring RFC 9457 typically uses: detail, title, or custom error message
             errorMessage = data.detail || data.title || data.message || errorMessage;
         } else if (error.message) {
             errorMessage = error.message;

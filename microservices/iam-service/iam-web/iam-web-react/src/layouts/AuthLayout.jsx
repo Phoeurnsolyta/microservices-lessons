@@ -1,33 +1,32 @@
 import {Outlet} from 'react-router-dom';
-import {Shield} from 'lucide-react';
 import LanguageSwitcher from '../components/common/LanguageSwitcher';
 
 export default function AuthLayout() {
     return (
         <div
-            className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/20 to-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            {/* Top Language Switcher */}
-            <div className="absolute top-6 right-6">
-                <LanguageSwitcher/>
+            className="min-h-screen bg-[#F5F5F7] text-slate-800 relative flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden select-none">
+            {/* Delicate Soft Background Rings */}
+            <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full border border-slate-200/60 pointer-events-none"/>
+            <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[850px] rounded-full border border-slate-200/40 pointer-events-none"/>
+
+            {/* Floating Sparkle Stars */}
+            <div className="absolute top-16 left-12 text-slate-300 text-lg">✦</div>
+            <div className="absolute top-36 right-20 text-slate-300 text-sm">✧</div>
+            <div className="absolute bottom-24 left-24 text-slate-300 text-base">✦</div>
+            <div className="absolute bottom-32 right-16 text-slate-300 text-lg">✧</div>
+
+            {/* Top Floating Language Switcher */}
+            <div className="absolute top-6 right-6 z-20">
+                <div className="bg-white rounded-full border border-slate-200 p-0.5 shadow-sm">
+                    <LanguageSwitcher/>
+                </div>
             </div>
 
-            <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-                <div
-                    className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-600 text-white shadow-md mb-4">
-                    <Shield className="w-8 h-8"/>
-                </div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                    ISTAD IAM PLATFORM
-                </h1>
-                <p className="mt-1 text-sm text-slate-500">
-                    Central Identity & Access Management Authority
-                </p>
-            </div>
-
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-                <div className="bg-white py-8 px-6 shadow-sm border border-slate-200 rounded-2xl sm:px-10">
-                    <Outlet/>
-                </div>
+            {/* Main Card Slot */}
+            <div className="w-full max-w-md relative z-10">
+                <Outlet/>
             </div>
         </div>
     );

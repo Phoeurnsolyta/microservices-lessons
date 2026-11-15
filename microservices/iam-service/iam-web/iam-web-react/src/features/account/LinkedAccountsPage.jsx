@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import {userService} from '../../services/userService';
 import {Link2, Unlink, CheckCircle2, AlertCircle, Loader2} from 'lucide-react';
@@ -16,27 +16,36 @@ export default function LinkedAccountsPage() {
         {key: 'facebook', name: 'Facebook', authUrl: 'http://localhost:9000/oauth2/authorization/facebook'},
     ];
 
-    const loadIdentities = useCallback(async () => {
-        try {
-            const data = await userService.getIdentities();
-            setIdentities(data || []);
-        } catch {
-            setIdentities([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const reloadIdentities = () => {
+        userService.getIdentities()
+            .then((data) => setIdentities(data || []))
+            .catch(() => setIdentities([]));
+    };
 
     useEffect(() => {
-        loadIdentities();
-    }, [loadIdentities]);
+        let isMounted = true;
+        userService.getIdentities()
+            .then((data) => {
+                if (isMounted) setIdentities(data || []);
+            })
+            .catch(() => {
+                if (isMounted) setIdentities([]);
+            })
+            .finally(() => {
+                if (isMounted) setLoading(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const handleUnlink = async (identityUuid) => {
         if (!window.confirm(t('account.unlinkConfirm'))) return;
         try {
             await userService.unlinkIdentity(identityUuid);
             setSuccess('Account unlinked successfully.');
-            loadIdentities();
+            reloadIdentities();
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
             setError(err.message || 'Cannot unlink the only login method.');

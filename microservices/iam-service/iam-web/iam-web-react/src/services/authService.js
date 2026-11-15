@@ -7,11 +7,28 @@ export const authService = {
             usernameOrEmail: username,
             password: password,
         });
-        return response.data; // { accessToken, tokenType, expiresIn }
+        return response.data;
+    },
+
+    async checkSession() {
+        const response = await apiClient.get('/api/auth/session');
+        return response.data;
+    },
+
+    async logout() {
+        try {
+            await apiClient.post('/api/auth/logout');
+        } catch {
+            // ignore if session was already expired
+        }
     },
 
     async register(data) {
-        const response = await apiClient.post('/api/auth/register', data);
+        const payload = {
+            ...data,
+            confirmPassword: data.confirmPassword || data.password,
+        };
+        const response = await apiClient.post('/api/auth/register', payload);
         return response.data;
     },
 

@@ -21,12 +21,8 @@ import {
 export default function Sidebar() {
     const {t} = useTranslation();
     const hasRole = useAuthStore((state) => state.hasRole);
-    const hasPermission = useAuthStore((state) => state.hasPermission);
 
-    const isAdmin =
-        hasRole('ADMIN') ||
-        hasPermission('user:read') ||
-        hasPermission('role:read');
+    const isAdmin = hasRole('ADMIN');
 
     const accountNav = [
         {to: '/', label: t('nav.profile'), icon: User, end: true},

@@ -1,5 +1,8 @@
 package kh.edu.istad.platform.iam.restapi.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import kh.edu.istad.platform.iam.domain.dto.AuthUserResult;
 import kh.edu.istad.platform.iam.domain.dto.UserAuthoritiesResult;
@@ -14,12 +17,24 @@ import kh.edu.istad.platform.iam.restapi.dto.response.UserResponse;
 import kh.edu.istad.platform.iam.restapi.mapper.UserWebMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -39,6 +54,9 @@ public class AuthController {
     private final JwtEncoder jwtEncoder;
     private final UserWebMapper userWebMapper;
 
+    private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+    private final RequestCache requestCache = new HttpSessionRequestCache();
+
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse register(@Valid @RequestBody RegisterUserRequest request) {
@@ -47,7 +65,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public TokenResponse login(@Valid @RequestBody LoginRequest request) {
+    public TokenResponse login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse
+    ) {
         AuthUserResult user = loadUserForAuthenticationUseCase.execute(request.usernameOrEmail());
 
         if (!passwordEncoder.matches(request.password(), user.passwordHash())) {
@@ -82,6 +104,85 @@ public class AuthController {
 
         String token = jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(() -> "RS256").build(), claims)).getTokenValue();
 
-        return new TokenResponse(token, "Bearer", 18000);
+        // 1. Establish Spring Security Session so Spring Authorization Server & Gateway work
+        List<SimpleGrantedAuthority> grantedAuthorities = authStrings.stream().map(SimpleGrantedAuthority::new).toList();
+        UserDetails userDetails = User.builder()
+                .username(user.username())
+                .password("")
+                .authorities(grantedAuthorities)
+                .build();
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                grantedAuthorities
+        );
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+        securityContextRepository.saveContext(context, httpRequest, httpResponse);
+
+        // 2. Check if user arrived from Gateway OAuth2 authorize flow
+        SavedRequest savedRequest = requestCache.getRequest(httpRequest, httpResponse);
+        String redirectUrl = savedRequest != null ? savedRequest.getRedirectUrl() : null;
+        if (savedRequest != null) {
+            requestCache.removeRequest(httpRequest, httpResponse);
+        }
+
+        return new TokenResponse(token, "Bearer", 18000, redirectUrl);
+    }
+
+    @GetMapping("/session")
+    public ResponseEntity<TokenResponse> session(HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        SecurityContext context = session != null
+                ? (SecurityContext) session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY)
+                : null;
+
+        if (context == null || context.getAuthentication() == null || !context.getAuthentication().isAuthenticated()
+                || "anonymousUser".equalsIgnoreCase(context.getAuthentication().getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String username = context.getAuthentication().getName();
+        AuthUserResult user = loadUserForAuthenticationUseCase.execute(username);
+        UserAuthoritiesResult authorities = getUserAuthoritiesUseCase.execute(user.uuid());
+
+        Instant now = Instant.now();
+        List<String> roleStrings = authorities.roles().stream()
+                .map(kh.edu.istad.platform.iam.domain.dto.RoleAuthorityResult::name)
+                .toList();
+
+        List<String> permStrings = new ArrayList<>(authorities.effectivePermissions());
+
+        List<String> authStrings = new ArrayList<>();
+        for (String r : roleStrings) {
+            authStrings.add("ROLE_" + r);
+        }
+        authStrings.addAll(permStrings);
+
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("http://localhost:9000")
+                .issuedAt(now)
+                .expiresAt(now.plus(5, ChronoUnit.HOURS))
+                .subject(user.uuid().toString())
+                .claim("preferred_username", user.username())
+                .claim("roles", roleStrings)
+                .claim("permissions", permStrings)
+                .claim("authorities", authStrings)
+                .build();
+
+        String token = jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(() -> "RS256").build(), claims)).getTokenValue();
+
+        return ResponseEntity.ok(new TokenResponse(token, "Bearer", 18000, null));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok().build();
     }
 }

@@ -12,6 +12,7 @@ export default function RegisterPage() {
         username: '',
         email: '',
         password: '',
+        confirmPassword: '',
         givenName: '',
         familyName: '',
         locale: 'en',
@@ -139,6 +140,21 @@ export default function RegisterPage() {
                         name="password"
                         required
                         value={formData.password}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        placeholder="••••••••"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Confirm Password
+                    </label>
+                    <input
+                        type="password"
+                        name="confirmPassword"
+                        required
+                        value={formData.confirmPassword}
                         onChange={handleChange}
                         className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="••••••••"

@@ -41,20 +41,15 @@ public class TelegramAuthController {
     @Value("${telegram.bot.username:}")
     private String botUsername;
 
-    /**
-     * Fallback for direct /oauth2/authorization/telegram clicks
-     */
-    @GetMapping("/oauth2/authorization/telegram")
+
+    @GetMapping({"/login/telegram", "/oauth2/authorization/telegram"})
     public String redirectTelegramAuth() {
         if (botUsername != null && !botUsername.isBlank()) {
             return "redirect:https://t.me/" + botUsername;
         }
-        return "redirect:/login";
+        return "redirect:/login?error=telegram_not_configured";
     }
 
-    /**
-     * Handles the callback from Telegram Login Widget
-     */
     @GetMapping("/login/telegram/callback")
     public String telegramCallback(
             @RequestParam Map<String, String> allParams,
@@ -119,7 +114,6 @@ public class TelegramAuthController {
         if (receivedHash == null || receivedHash.isBlank()) {
             return false;
         }
-        // Build data_check_string from alphabetically sorted parameters excluding hash
         Map<String, String> sortedParams = new TreeMap<>(params);
         sortedParams.remove("hash");
         String dataCheckString = sortedParams.entrySet().stream()
@@ -127,10 +121,10 @@ public class TelegramAuthController {
                 .map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.joining("\n"));
         try {
-            // secret_key = SHA256(botToken)
+
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] secretKey = digest.digest(token.getBytes(StandardCharsets.UTF_8));
-            // HMAC-SHA256(dataCheckString, secret_key)
+
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(secretKey, "HmacSHA256"));
             byte[] hmac = mac.doFinal(dataCheckString.getBytes(StandardCharsets.UTF_8));

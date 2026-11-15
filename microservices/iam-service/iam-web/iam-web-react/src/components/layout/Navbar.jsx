@@ -3,6 +3,7 @@ import {useAuthStore} from '../../store/useAuthStore';
 import {useNavigate} from 'react-router-dom';
 import {Shield, LogOut, User as UserIcon} from 'lucide-react';
 import LanguageSwitcher from '../common/LanguageSwitcher';
+import { authService } from '../../services/authService';
 
 export default function Navbar() {
     const {t} = useTranslation();
@@ -11,7 +12,8 @@ export default function Navbar() {
     const roles = useAuthStore((state) => state.roles);
     const logout = useAuthStore((state) => state.logout);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        await authService.logout();
         logout();
         navigate('/login');
     };

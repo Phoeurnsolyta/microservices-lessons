@@ -12,13 +12,13 @@ import SessionsPage from '../features/account/SessionsPage';
 import LoginHistoryPage from '../features/account/LoginHistoryPage';
 import AccountActivityPage from '../features/account/AccountActivityPage';
 import DeactivatePage from '../features/account/DeactivatePage';
-
-const Placeholder = ({title}) => (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
-        <h2 className="text-xl font-bold text-slate-800 mb-2">{title}</h2>
-        <p className="text-xs text-slate-500">Coming next in Step 5 (Management Suite).</p>
-    </div>
-);
+import AdminOverviewPage from '../features/dashboard/AdminOverviewPage';
+import UserManagementPage from '../features/users/UserManagementPage';
+import RoleManagementPage from '../features/roles/RoleManagementPage';
+import PermissionManagementPage from '../features/permissions/PermissionManagementPage';
+import ClientManagementPage from '../features/clients/ClientManagementPage';
+import AuditLogsPage from '../features/audit/AuditLogsPage';
+import SystemSettingsPage from '../features/settings/SystemSettingsPage';
 
 export default function AppRoutes() {
     return (
@@ -41,13 +41,13 @@ export default function AppRoutes() {
                     <Route path="/deactivate" element={<DeactivatePage/>}/>
 
                     <Route element={<AdminRoute/>}>
-                        <Route path="/admin" element={<Placeholder title="Admin Overview Dashboard"/>}/>
-                        <Route path="/admin/users" element={<Placeholder title="User Management"/>}/>
-                        <Route path="/admin/roles" element={<Placeholder title="Role Management"/>}/>
-                        <Route path="/admin/permissions" element={<Placeholder title="Permission Catalog"/>}/>
-                        <Route path="/admin/clients" element={<Placeholder title="OAuth2 Clients"/>}/>
-                        <Route path="/admin/audit" element={<Placeholder title="Audit Activity Stream"/>}/>
-                        <Route path="/admin/settings" element={<Placeholder title="System Policies"/>}/>
+                        <Route path="/admin" element={<AdminOverviewPage/>}/>
+                        <Route path="/admin/users" element={<UserManagementPage/>}/>
+                        <Route path="/admin/roles" element={<RoleManagementPage/>}/>
+                        <Route path="/admin/permissions" element={<PermissionManagementPage/>}/>
+                        <Route path="/admin/clients" element={<ClientManagementPage/>}/>
+                        <Route path="/admin/audit" element={<AuditLogsPage/>}/>
+                        <Route path="/admin/settings" element={<SystemSettingsPage/>}/>
                     </Route>
                 </Route>
             </Route>

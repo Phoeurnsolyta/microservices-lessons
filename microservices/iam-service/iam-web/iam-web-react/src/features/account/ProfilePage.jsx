@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useAuthStore} from '../../store/useAuthStore';
 import {userService} from '../../services/userService';
-import { User, Mail, Phone, MapPin, CheckCircle2, AlertCircle, Save, Loader2 } from 'lucide-react';
+import {User, Mail, Phone, MapPin, CheckCircle2, AlertCircle, Save, Loader2} from 'lucide-react';
 
 export default function ProfilePage() {
     const {t} = useTranslation();
@@ -23,7 +23,7 @@ export default function ProfilePage() {
         gender: 'Other',
         birthdate: '',
         phoneNumber: '',
-        zoneinfo: 'Asia/Phnom_Penh',
+        zoneinfo: 'Phnom_Penh',
         locale: 'en',
         streetAddress: '',
         locality: '',
@@ -33,13 +33,21 @@ export default function ProfilePage() {
     });
 
     useEffect(() => {
-        async function loadProfile() {
-            try {
-                const data = await userService.getProfile();
+        let isMounted = true;
+        userService.getProfile()
+            .then((data) => {
+                if (!isMounted) return;
                 setUser(data);
+
+                // Derive given and family names from data or full name
+                const fullName = data.name || '';
+                const nameParts = fullName.trim().split(/\s+/);
+                const derivedGiven = data.givenName || nameParts[0] || '';
+                const derivedFamily = data.familyName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
+
                 setFormData({
-                    givenName: data.givenName || '',
-                    familyName: data.familyName || '',
+                    givenName: derivedGiven,
+                    familyName: derivedFamily,
                     middleName: data.middleName || '',
                     nickname: data.nickname || '',
                     gender: data.gender || 'Other',
@@ -53,22 +61,19 @@ export default function ProfilePage() {
                     postalCode: data.address?.postalCode || '',
                     country: data.address?.country || 'KH',
                 });
-            } catch {
-                if (user) {
-                    setFormData((prev) => ({
-                        ...prev,
-                        givenName: user.givenName || '',
-                        familyName: user.familyName || '',
-                        phoneNumber: user.phoneNumber || '',
-                    }));
-                }
-            } finally {
-                setFetching(false);
-            }
-        }
+            })
+            .catch((err) => {
+                if (!isMounted) return;
+                setError(err.message || 'Failed to load profile.');
+            })
+            .finally(() => {
+                if (isMounted) setFetching(false);
+            });
 
-        loadProfile();
-    }, [setUser, user]);
+        return () => {
+            isMounted = false;
+        };
+    }, [setUser]);
 
     const handleChange = (e) => {
         setFormData((prev) => ({...prev, [e.target.name]: e.target.value}));
@@ -80,29 +85,37 @@ export default function ProfilePage() {
         setError('');
         setSuccess('');
 
-        try {
-            const payload = {
-                givenName: formData.givenName,
-                familyName: formData.familyName,
-                middleName: formData.middleName,
-                nickname: formData.nickname,
-                gender: formData.gender,
-                birthdate: formData.birthdate || null,
-                phoneNumber: formData.phoneNumber,
-                zoneinfo: formData.zoneinfo,
-                locale: formData.locale,
-                address: {
-                    streetAddress: formData.streetAddress,
-                    locality: formData.locality,
-                    region: formData.region,
-                    postalCode: formData.postalCode,
-                    country: formData.country,
-                },
-            };
+        // Prepare clean payload without empty strings that break DB constraints
+        const hasAddress =
+            formData.streetAddress.trim() ||
+            formData.locality.trim() ||
+            formData.region.trim();
 
+        const payload = {
+            givenName: formData.givenName.trim(),
+            familyName: formData.familyName.trim(),
+            middleName: formData.middleName.trim() || null,
+            nickname: formData.nickname.trim() || null,
+            gender: formData.gender || null,
+            birthdate: formData.birthdate || null,
+            phoneNumber: formData.phoneNumber.trim() || null,
+            zoneinfo: formData.zoneinfo || 'Asia/Phnom_Penh',
+            locale: formData.locale || 'en',
+            address: hasAddress
+                ? {
+                    streetAddress: formData.streetAddress.trim() || null,
+                    locality: formData.locality.trim() || null,
+                    region: formData.region.trim() || null,
+                    postalCode: formData.postalCode.trim() || null,
+                    country: formData.country.trim() || 'KH',
+                }
+                : null,
+        };
+
+        try {
             const updated = await userService.updateProfile(payload);
             setUser(updated);
-            setSuccess('Profile updated successfully!');
+            setSuccess('Profile updated successfully in backend database!');
             setTimeout(() => setSuccess(''), 4000);
         } catch (err) {
             setError(err.message || 'Failed to update profile.');
@@ -122,46 +135,50 @@ export default function ProfilePage() {
 
     return (
         <div className="space-y-6">
-
             <div>
                 <h1 className="text-xl font-bold text-slate-900">{t('account.profileTitle')}</h1>
                 <p className="text-xs text-slate-500 mt-0.5">{t('account.profileSubtitle')}</p>
             </div>
 
+            {/* Account Info Banner */}
             <div
-                className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col sm:flex-row items-center gap-5 shadow-sm">
-                <div
-                    className="w-20 h-20 rounded-2xl bg-primary-100 border-2 border-primary-200 text-primary-700 flex items-center justify-center text-2xl font-bold shadow-sm">
-                    {formData.givenName?.[0] || 'U'}
-                </div>
-                <div className="flex-1 text-center sm:text-left space-y-1">
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                        <h2 className="text-lg font-bold text-slate-800">
-                            {formData.givenName} {formData.familyName}
-                        </h2>
-                        <span
-                            className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary-50 text-primary-700 border border-primary-200">
-              {roles.includes('ADMIN') ? 'ADMINISTRATOR' : 'USER'}
-            </span>
-                    </div>
-                    <p className="text-xs text-slate-400">@{user?.username || 'user'}</p>
+                className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
                     <div
-                        className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-1 text-xs text-slate-600">
-            <span className="flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-slate-400"/>
-                {user?.email || 'N/A'}
-            </span>
-                        <span className="flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-slate-400"/>
-                            {formData.phoneNumber || 'No phone set'}
-            </span>
+                        className="w-16 h-16 rounded-2xl bg-primary-100 text-primary-800 flex items-center justify-center font-bold text-xl border border-primary-200 shadow-xs">
+                        {formData.givenName?.[0] || user?.name?.[0] || 'U'}
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-base font-bold text-slate-900">
+                                {formData.givenName} {formData.familyName}
+                            </h2>
+                            <span
+                                className="text-[10px] font-bold bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full border border-primary-100 uppercase">
+                {roles[0] || 'USER'}
+              </span>
+                        </div>
+                        <div className="text-xs text-slate-500 font-mono mt-0.5">@{user?.username}</div>
+                        <div className="flex items-center gap-3 text-xs text-slate-500 mt-2">
+              <span className="flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5 text-slate-400"/>
+                  {user?.email}
+              </span>
+                            {formData.phoneNumber && (
+                                <span className="flex items-center gap-1">
+                  <Phone className="w-3.5 h-3.5 text-slate-400"/>
+                                    {formData.phoneNumber}
+                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
 
+            {/* Alerts */}
             {success && (
                 <div
-                    className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs rounded-xl flex items-center gap-2">
+                    className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 shrink-0"/>
                     <span>{success}</span>
                 </div>
@@ -175,22 +192,21 @@ export default function ProfilePage() {
                 </div>
             )}
 
-
+            {/* Form Card */}
             <form onSubmit={handleSubmit}
-                  className="bg-white rounded-2xl border border-slate-200 p-6 space-y-6 shadow-sm">
+                  className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
                 <div>
                     <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
                         <User className="w-4 h-4 text-primary-600"/>
-                        General Information
+                        <span>General Information</span>
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                            <label
-                                className="block text-xs font-semibold text-slate-700 mb-1">{t('auth.givenName')}</label>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1">First Name *</label>
                             <input
                                 type="text"
-                                name="givenName"
                                 required
+                                name="givenName"
                                 value={formData.givenName}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -198,12 +214,11 @@ export default function ProfilePage() {
                         </div>
 
                         <div>
-                            <label
-                                className="block text-xs font-semibold text-slate-700 mb-1">{t('auth.familyName')}</label>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1">Last Name *</label>
                             <input
                                 type="text"
-                                name="familyName"
                                 required
+                                name="familyName"
                                 value={formData.familyName}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -241,7 +256,7 @@ export default function ProfilePage() {
                                 name="gender"
                                 value={formData.gender}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                             >
                                 <option value="Male">{t('account.male')}</option>
                                 <option value="Female">{t('account.female')}</option>
@@ -265,7 +280,7 @@ export default function ProfilePage() {
                             <label
                                 className="block text-xs font-semibold text-slate-700 mb-1">{t('account.phone')}</label>
                             <input
-                                type="text"
+                                type="tel"
                                 name="phoneNumber"
                                 value={formData.phoneNumber}
                                 onChange={handleChange}
@@ -281,10 +296,10 @@ export default function ProfilePage() {
                                 name="locale"
                                 value={formData.locale}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                             >
                                 <option value="en">English (en)</option>
-                                <option value="km">ភាសាខ្មែរ (km)</option>
+                                <option value="km">Khmer (km)</option>
                             </select>
                         </div>
                     </div>
@@ -295,7 +310,7 @@ export default function ProfilePage() {
                 <div>
                     <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-primary-600"/>
-                        {t('account.address')}
+                        <span>{t('account.address')}</span>
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         <div className="sm:col-span-2">

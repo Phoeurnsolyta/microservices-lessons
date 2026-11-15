@@ -101,7 +101,8 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login",
+                                "/api/auth/session", "/api/auth/logout").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -125,6 +126,7 @@ public class SecurityConfig {
                                 "/login",
                                 "/login/**",
                                 "/register",
+                                "/logout",
                                 "/oauth2/authorization/**",
                                 "/assets/**",
                                 "/static/**",
@@ -146,6 +148,15 @@ public class SecurityConfig {
                 .oauth2Client(Customizer.withDefaults())
                 .formLogin(config -> config
                         .loginPage("/login")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutRequestMatcher(request -> "/logout".equals(request.getRequestURI()))
+                        .logoutSuccessUrl("/login?logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
                         .permitAll()
                 );
         return http.build();
