@@ -22,6 +22,8 @@ import org.springframework.security.config.annotation.web.configurers.oauth2.ser
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
@@ -33,6 +35,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -60,32 +65,28 @@ public class SecurityConfig {
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http)
             throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
-
         http
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
+                .cors(Customizer.withDefaults())
                 .with(authorizationServerConfigurer, authorizationServer ->
                         authorizationServer
                                 .authorizationEndpoint(authorizationEndpoint ->
-                                        authorizationEndpoint.consentPage("/oauth2/consent") // Custom JTE Consent Page
+                                        authorizationEndpoint.consentPage("/oauth2/consent")
                                 )
                                 .oidc(oidc -> oidc
                                         .clientRegistrationEndpoint(Customizer.withDefaults())
                                 )
                 )
-
                 .authorizeHttpRequests((authorize) ->
                         authorize
                                 .anyRequest().authenticated()
                 )
-                // Redirect to the login page when not authenticated from the
-                // authorization endpoint
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
                                 new LoginUrlAuthenticationEntryPoint("/login"),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 );
-
         return http.build();
     }
 
@@ -95,11 +96,12 @@ public class SecurityConfig {
             throws Exception {
         http
                 .securityMatcher("/api/**")
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -115,11 +117,22 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
             throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login",
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/login",
                                 "/login/**",
-                                "/oauth2/authorization/**", "/register",
-                                "/css/**", "/js/**", "/images/**").permitAll()
+                                "/register",
+                                "/oauth2/authorization/**",
+                                "/assets/**",
+                                "/static/**",
+                                "/favicon.svg",
+                                "/icons.svg",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(config -> config
@@ -135,7 +148,6 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .permitAll()
                 );
-
         return http.build();
     }
 
@@ -153,6 +165,25 @@ public class SecurityConfig {
                     .collect(Collectors.toList());
         });
         return converter;
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(
+                List.of(
+                        "http://localhost:3000",
+                        "http://127.0.0.1:3000", "http://localhost:9000")
+        );
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+        );
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
 
@@ -184,6 +215,11 @@ public class SecurityConfig {
         return new ImmutableJWKSet<>(jwkSet);
     }
 
+    @Bean
+    public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
+        return new NimbusJwtEncoder(jwkSource);
+    }
+
     private static KeyPair generateRsaKey() {
         KeyPair keyPair;
         try {
@@ -207,6 +243,4 @@ public class SecurityConfig {
                 .issuer(issuer)
                 .build();
     }
-
-
 }

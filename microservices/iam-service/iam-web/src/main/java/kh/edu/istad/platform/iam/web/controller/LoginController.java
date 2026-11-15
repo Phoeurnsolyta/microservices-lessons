@@ -18,7 +18,12 @@ public class LoginController {
     private String telegramBotUsername;
 
     @GetMapping("/login")
-    public String login(
+    public String login() {
+        return "forward:/index.html";
+    }
+
+    @GetMapping("/jte/login")
+    public String jteLogin(
             @RequestParam(name = "error", required = false) String error,
             @RequestParam(name = "logout", required = false) String logout,
             @RequestParam(name = "registered", required = false) String registered,

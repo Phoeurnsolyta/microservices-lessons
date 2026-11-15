@@ -5,11 +5,18 @@ import AuthLayout from '../layouts/AuthLayout';
 import AppLayout from '../layouts/AppLayout';
 import LoginPage from '../features/auth/LoginPage';
 import RegisterPage from '../features/auth/RegisterPage';
+import ProfilePage from '../features/account/ProfilePage';
+import SecurityPage from '../features/account/SecurityPage';
+import LinkedAccountsPage from '../features/account/LinkedAccountsPage';
+import SessionsPage from '../features/account/SessionsPage';
+import LoginHistoryPage from '../features/account/LoginHistoryPage';
+import AccountActivityPage from '../features/account/AccountActivityPage';
+import DeactivatePage from '../features/account/DeactivatePage';
 
 const Placeholder = ({title}) => (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
         <h2 className="text-xl font-bold text-slate-800 mb-2">{title}</h2>
-        <p className="text-xs text-slate-500">This feature view will be implemented in the next step.</p>
+        <p className="text-xs text-slate-500">Coming next in Step 5 (Management Suite).</p>
     </div>
 );
 
@@ -24,14 +31,14 @@ export default function AppRoutes() {
 
             <Route element={<ProtectedRoute/>}>
                 <Route element={<AppLayout/>}>
-                    <Route path="/" element={<Placeholder title="Profile Overview"/>}/>
-                    <Route path="/profile" element={<Placeholder title="Personal Profile Edit"/>}/>
-                    <Route path="/security" element={<Placeholder title="Security & Password"/>}/>
-                    <Route path="/linked-accounts" element={<Placeholder title="Linked Social Accounts"/>}/>
-                    <Route path="/sessions" element={<Placeholder title="Active Sessions"/>}/>
-                    <Route path="/login-history" element={<Placeholder title="Login History"/>}/>
-                    <Route path="/activity" element={<Placeholder title="Account Activity Log"/>}/>
-                    <Route path="/deactivate" element={<Placeholder title="Account Deactivation"/>}/>
+                    <Route path="/" element={<ProfilePage/>}/>
+                    <Route path="/profile" element={<ProfilePage/>}/>
+                    <Route path="/security" element={<SecurityPage/>}/>
+                    <Route path="/linked-accounts" element={<LinkedAccountsPage/>}/>
+                    <Route path="/sessions" element={<SessionsPage/>}/>
+                    <Route path="/login-history" element={<LoginHistoryPage/>}/>
+                    <Route path="/activity" element={<AccountActivityPage/>}/>
+                    <Route path="/deactivate" element={<DeactivatePage/>}/>
 
                     <Route element={<AdminRoute/>}>
                         <Route path="/admin" element={<Placeholder title="Admin Overview Dashboard"/>}/>

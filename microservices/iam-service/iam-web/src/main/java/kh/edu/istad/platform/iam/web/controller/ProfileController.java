@@ -44,16 +44,17 @@ public class ProfileController {
     private final OAuth2AuthorizationConsentService authorizationConsentService;
     private final I18n i18n;
 
-
     @GetMapping("/")
-    public String index(Authentication authentication, Model model) {
+    public String index() {
+        return "forward:/index.html";
+    }
 
+    @GetMapping("/jte")
+    public String jteIndex(Authentication authentication, Model model) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
-
         UUID userUuid = resolveUserUuid(authentication.getName());
-
         if (userUuid != null) {
             UserResult user = getUserUseCase.execute(userUuid);
             UserAuthoritiesResult authorities = getUserAuthoritiesUseCase.execute(userUuid);
@@ -62,7 +63,6 @@ public class ProfileController {
         }
         model.addAttribute("activeTab", "overview");
         model.addAttribute("msg", i18n);
-
         return "index";
     }
 

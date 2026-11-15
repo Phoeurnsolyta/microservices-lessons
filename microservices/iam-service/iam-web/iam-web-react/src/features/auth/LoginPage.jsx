@@ -31,29 +31,22 @@ export default function LoginPage() {
 
         try {
             const tokenData = await authService.login({username, password});
-
-            let userProfile = null;
-            try {
-                userProfile = await authService.getMe();
-            } catch {
-                userProfile = {
-                    username: username,
-                    givenName: 'Solyta',
-                    familyName: 'Phoeurn',
-                    email: 'lyta07807@gmail.com',
-                    roles: ['ADMIN'],
-                };
-            }
-
+            const realJwt = tokenData.accessToken || tokenData.access_token;
             setAuth({
-                accessToken: tokenData.access_token || 'mock-dev-token',
-                refreshToken: tokenData.refresh_token,
-                user: userProfile,
+                accessToken: realJwt,
+                refreshToken: tokenData.refreshToken,
             });
 
-            navigate(from, {replace: true});
+            try {
+                const liveProfile = await authService.getMe();
+                useAuthStore.getState().setUser(liveProfile);
+            } catch (err) {
+                console.warn("Could not load user profile:", err);
+            }
+
+            navigate('/', {replace: true});
         } catch (err) {
-            setError(err.message || 'Failed to sign in. Please check your credentials.');
+            setError(err.message || 'Invalid username or password.');
         } finally {
             setLoading(false);
         }
