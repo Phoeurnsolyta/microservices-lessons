@@ -610,7 +610,12 @@ function UserRoleAssignmentModal({user, onClose, onSuccess}) {
             .then(([rolesRes, userAuthRes]) => {
                 if (isMounted) {
                     setAllRoles(rolesRes.content || []);
-                    const currentUuids = new Set((userAuthRes.roles || []).map((r) => r.roleUuid));
+                    // Read r.uuid (backend field name) and filter out any null/undefined
+                    const currentUuids = new Set(
+                        (userAuthRes.roles || [])
+                            .map((r) => r.uuid || r.roleUuid)
+                            .filter(Boolean)
+                    );
                     setAssignedRoleUuids(currentUuids);
                 }
             })
@@ -625,6 +630,7 @@ function UserRoleAssignmentModal({user, onClose, onSuccess}) {
     }, [user.uuid]);
 
     const toggleRole = (uuid) => {
+        if (!uuid) return;
         const next = new Set(assignedRoleUuids);
         if (next.has(uuid)) {
             next.delete(uuid);
@@ -635,10 +641,16 @@ function UserRoleAssignmentModal({user, onClose, onSuccess}) {
     };
 
     const handleSave = async () => {
+        const validRoleUuids = Array.from(assignedRoleUuids).filter(Boolean);
+        if (validRoleUuids.length === 0) {
+            alert('Please select at least one role to assign.');
+            return;
+        }
+
         setSaving(true);
         try {
             await adminService.assignRolesToUser(user.uuid, {
-                roleUuids: Array.from(assignedRoleUuids),
+                roleUuids: validRoleUuids,
             });
             onSuccess();
         } catch (err) {

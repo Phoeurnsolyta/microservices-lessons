@@ -9,8 +9,6 @@ import {
     Layers,
     Activity,
     ArrowUpRight,
-    ShieldAlert,
-    Server,
     Plus,
     Loader2,
 } from 'lucide-react';
@@ -46,7 +44,7 @@ export default function AdminOverviewPage() {
                     rolesCount: rolesData.page?.totalElements || rolesData.content?.length || 0,
                     permissionsCount: permsData.page?.totalElements || permsData.content?.length || 0,
                     clientsCount: clientsData?.length || 0,
-                    recentUsers: usersList.slice(0, 5),
+                    recentUsers: usersList.slice(0, 8),
                 });
             })
             .catch((err) => {
@@ -155,85 +153,42 @@ export default function AdminOverviewPage() {
                 })}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <div className="flex items-center gap-2">
-                            <Activity className="w-4 h-4 text-primary-600"/>
-                            <h2 className="text-sm font-bold text-slate-800">Registered Platform Users</h2>
-                        </div>
-                        <Link to="/admin/users" className="text-xs text-primary-600 hover:underline font-semibold">
-                            Manage All Users ({stats.totalUsers})
-                        </Link>
+            {/* Registered Platform Users - Clean Full Width */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-primary-600"/>
+                        <h2 className="text-sm font-bold text-slate-800">Registered Platform Users</h2>
                     </div>
-
-                    <div className="divide-y divide-slate-100">
-                        {stats.recentUsers.length === 0 ? (
-                            <div className="py-8 text-center text-xs text-slate-400">No users found.</div>
-                        ) : (
-                            stats.recentUsers.map((u) => (
-                                <div key={u.uuid} className="py-3 flex items-center justify-between gap-4 text-xs">
-                                    <div>
-                                        <div className="font-semibold text-slate-900">{u.name || u.username}</div>
-                                        <div
-                                            className="text-[11px] text-slate-400 font-mono">@{u.username} • {u.email}</div>
-                                    </div>
-                                    <span
-                                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                            u.enabled
-                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                                : 'bg-slate-100 text-slate-500 border border-slate-200'
-                                        }`}
-                                    >
-                    {u.enabled ? 'ACTIVE' : 'DISABLED'}
-                  </span>
-                                </div>
-                            ))
-                        )}
-                    </div>
+                    <Link to="/admin/users" className="text-xs text-primary-600 hover:underline font-semibold">
+                        Manage All Users ({stats.totalUsers})
+                    </Link>
                 </div>
 
-                {/* Engine Security Specifications (1 col) */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                    <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                        <Server className="w-4 h-4 text-primary-600"/>
-                        <h2 className="text-sm font-bold text-slate-800">IAM Platform Standards</h2>
-                    </div>
-
-                    <div className="space-y-3 text-xs">
-                        <div
-                            className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                            <span className="text-slate-600 font-medium">Protocol Standard</span>
-                            <span className="font-mono font-bold text-slate-900">OAuth 2.1 / OIDC 1.0</span>
-                        </div>
-                        <div
-                            className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                            <span className="text-slate-600 font-medium">Backend Framework</span>
-                            <span className="font-mono font-bold text-slate-900">Spring Boot 3.4.0</span>
-                        </div>
-                        <div
-                            className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                            <span className="text-slate-600 font-medium">Frontend Framework</span>
-                            <span className="font-mono font-bold text-slate-900">React 19 + Tailwind v4</span>
-                        </div>
-                        <div
-                            className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                            <span className="text-slate-600 font-medium">Token Format</span>
-                            <span className="font-mono font-bold text-slate-900">RS256 Signed JWT</span>
-                        </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-slate-100">
-                        <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-start gap-2.5">
-                            <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5"/>
-                            <div className="text-xs text-amber-800 space-y-1">
-                                <div className="font-semibold">Security Enforcement Active</div>
-                                <div>Stateless RFC 9457 Problem Details error translation is active for all REST
-                                    endpoints.
+                <div className="divide-y divide-slate-100">
+                    {stats.recentUsers.length === 0 ? (
+                        <div className="py-8 text-center text-xs text-slate-400">No users found.</div>
+                    ) : (
+                        stats.recentUsers.map((u) => (
+                            <div key={u.uuid} className="py-3 flex items-center justify-between gap-4 text-xs">
+                                <div>
+                                    <div className="font-semibold text-slate-900">{u.name || u.username}</div>
+                                    <div className="text-[11px] text-slate-400 font-mono">
+                                        @{u.username} • {u.email}
+                                    </div>
                                 </div>
+                                <span
+                                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                        u.enabled
+                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                            : 'bg-slate-100 text-slate-500 border border-slate-200'
+                                    }`}
+                                >
+                                    {u.enabled ? 'ACTIVE' : 'DISABLED'}
+                                </span>
                             </div>
-                        </div>
-                    </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>
