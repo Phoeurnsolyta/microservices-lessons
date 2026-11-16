@@ -15,5 +15,7 @@ public interface IdentityJpaRepository extends JpaRepository<IdentityEntity, Lon
 
     Optional<IdentityEntity> findByProviderAndProviderSubjectAndIsDeletedFalse(String provider, String providerSubject);
 
+    Optional<IdentityEntity> findByProviderAndProviderSubject(String provider, String providerSubject);
+
     boolean existsByUserIdAndProviderAndIsDeletedFalse(Long userId, String provider);
 }

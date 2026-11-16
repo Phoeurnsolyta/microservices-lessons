@@ -44,7 +44,17 @@ public class ProfileController {
     private final OAuth2AuthorizationConsentService authorizationConsentService;
     private final I18n i18n;
 
-    @GetMapping("/")
+    @GetMapping(value = {
+            "/",
+            "/linked-accounts",
+            "/security",
+            "/sessions",
+            "/login-history",
+            "/activity",
+            "/deactivate",
+            "/admin",
+            "/admin/**"
+    })
     public String index() {
         return "forward:/index.html";
     }

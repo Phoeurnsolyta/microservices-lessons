@@ -102,7 +102,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/register", "/api/auth/login",
-                                "/api/auth/session", "/api/auth/logout").permitAll()
+                                "/api/auth/session", "/api/auth/logout",
+                                "/api/media/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -126,12 +127,22 @@ public class SecurityConfig {
                                 "/login",
                                 "/login/**",
                                 "/register",
+                                "/linked-accounts",
+                                "/security",
+                                "/sessions",
+                                "/login-history",
+                                "/activity",
+                                "/deactivate",
+                                "/admin",
+                                "/admin/**",
                                 "/logout",
                                 "/oauth2/authorization/**",
                                 "/assets/**",
                                 "/static/**",
                                 "/favicon.svg",
                                 "/icons.svg",
+                                "/istad-logo.png",
+                                "/*.png",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**").permitAll()

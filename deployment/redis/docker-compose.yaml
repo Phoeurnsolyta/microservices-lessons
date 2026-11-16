@@ -1,0 +1,14 @@
+services:
+  ite-redis:
+    container_name: ite-redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --requirepass qwerqwer --appendonly yes
+    restart: always
+
+volumes:
+  redis-data:
+    driver: local

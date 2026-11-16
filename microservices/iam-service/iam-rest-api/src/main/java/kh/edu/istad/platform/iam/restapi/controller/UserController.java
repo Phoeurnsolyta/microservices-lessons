@@ -6,14 +6,14 @@ import kh.edu.istad.platform.iam.domain.usecase.identity.ListUserIdentitiesUseCa
 import kh.edu.istad.platform.iam.domain.usecase.identity.UnlinkIdentityUseCase;
 import kh.edu.istad.platform.iam.domain.usecase.user.*;
 import kh.edu.istad.platform.iam.restapi.dto.request.*;
-import kh.edu.istad.platform.iam.restapi.dto.response.IdentityResponse;
-import kh.edu.istad.platform.iam.restapi.dto.response.PageResponse;
-import kh.edu.istad.platform.iam.restapi.dto.response.UserAuthoritiesResponse;
-import kh.edu.istad.platform.iam.restapi.dto.response.UserResponse;
+import kh.edu.istad.platform.iam.restapi.dto.response.*;
 import kh.edu.istad.platform.iam.restapi.mapper.UserWebMapper;
+import kh.edu.istad.platform.iam.restapi.service.RedisLoginHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,6 +42,18 @@ public class UserController {
     private final ListUserIdentitiesUseCase listUserIdentitiesUseCase;
     private final UnlinkIdentityUseCase unlinkIdentityUseCase;
     private final UserWebMapper userWebMapper;
+    private final RedisLoginHistoryService loginHistoryService;
+
+    private String resolveCurrentActor() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getName() != null && !auth.getName().isBlank()) {
+                return auth.getName();
+            }
+        } catch (Exception ignored) {
+        }
+        return "admin";
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -50,6 +62,15 @@ public class UserController {
             @Valid @RequestBody CreateUserRequest request
     ) {
         UserResult result = createUserUseCase.execute(userWebMapper.toCommand(request));
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "USER_LOGIN_SUCCESS",
+                actor,
+                "User: " + result.username(),
+                "Administrator created user account @" + result.username(),
+                "127.0.0.1",
+                "SUCCESS"
+        );
         return userWebMapper.toResponse(result);
     }
 
@@ -84,6 +105,15 @@ public class UserController {
         UserResult result = updateUserProfileUseCase.execute(
                 userWebMapper.toCommand(uuid, request)
         );
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "USER_LOGIN_SUCCESS",
+                actor,
+                "User: " + result.username(),
+                "Updated user profile for @" + result.username(),
+                "127.0.0.1",
+                "SUCCESS"
+        );
         return userWebMapper.toResponse(result);
     }
 
@@ -92,6 +122,15 @@ public class UserController {
     @PreAuthorize("hasAuthority('user:delete')")
     public void deleteUser(@PathVariable("uuid") UUID uuid) {
         deleteUserUseCase.execute(uuid);
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "USER_LOGIN_SUCCESS",
+                actor,
+                "User: " + uuid,
+                "Deleted user account " + uuid,
+                "127.0.0.1",
+                "SUCCESS"
+        );
     }
 
     @PostMapping("/{uuid}/enable")
@@ -99,6 +138,15 @@ public class UserController {
     @PreAuthorize("hasAuthority('user:update')")
     public void enableUser(@PathVariable("uuid") UUID uuid) {
         enableUserUseCase.execute(uuid);
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "USER_LOGIN_SUCCESS",
+                actor,
+                "User: " + uuid,
+                "Enabled user account",
+                "127.0.0.1",
+                "SUCCESS"
+        );
     }
 
     @PostMapping("/{uuid}/disable")
@@ -106,6 +154,15 @@ public class UserController {
     @PreAuthorize("hasAuthority('user:update')")
     public void disableUser(@PathVariable("uuid") UUID uuid) {
         disableUserUseCase.execute(uuid);
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "USER_LOGIN_SUCCESS",
+                actor,
+                "User: " + uuid,
+                "Disabled user account",
+                "127.0.0.1",
+                "SUCCESS"
+        );
     }
 
     @PostMapping("/{uuid}/lock")
@@ -113,6 +170,15 @@ public class UserController {
     @PreAuthorize("hasAuthority('user:update')")
     public void lockUser(@PathVariable("uuid") UUID uuid) {
         lockUserUseCase.execute(uuid);
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "USER_LOGIN_SUCCESS",
+                actor,
+                "User: " + uuid,
+                "Locked user account",
+                "127.0.0.1",
+                "SUCCESS"
+        );
     }
 
     @PostMapping("/{uuid}/unlock")
@@ -120,6 +186,15 @@ public class UserController {
     @PreAuthorize("hasAuthority('user:update')")
     public void unlockUser(@PathVariable("uuid") UUID uuid) {
         unlockUserUseCase.execute(uuid);
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "USER_LOGIN_SUCCESS",
+                actor,
+                "User: " + uuid,
+                "Unlocked user account",
+                "127.0.0.1",
+                "SUCCESS"
+        );
     }
 
     @PutMapping("/{uuid}/password")
@@ -130,6 +205,15 @@ public class UserController {
             @Valid @RequestBody ResetUserPasswordRequest request) {
         resetUserPasswordUseCase.execute(
                 new ResetUserPasswordCommand(uuid, request.newPassword())
+        );
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "PASSWORD_RESET",
+                actor,
+                "User: " + uuid,
+                "Administrator reset user password",
+                "127.0.0.1",
+                "SUCCESS"
         );
     }
 
@@ -145,13 +229,23 @@ public class UserController {
             @PathVariable("uuid") UUID uuid,
             @Valid @RequestBody AssignRolesToUserRequest request
     ) {
-        return assignRolesToUserUseCase.execute(
+        List<RoleAssignmentResult> results = assignRolesToUserUseCase.execute(
                 new AssignRolesToUserCommand(
                         uuid,
                         request.roleUuids(),
                         request.expiresAt(),
                         request.reason())
         );
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "ROLE_ASSIGNED",
+                actor,
+                "User: " + uuid,
+                "Assigned roles: " + request.roleUuids() + ". Reason: " + request.reason(),
+                "127.0.0.1",
+                "SUCCESS"
+        );
+        return results;
     }
 
     @DeleteMapping("/{uuid}/roles/{roleUuid}")
@@ -163,6 +257,15 @@ public class UserController {
             @RequestParam(name = "reason", required = false, defaultValue = "Revoked by administrator") String reason
     ) {
         revokeRoleFromUserUseCase.execute(uuid, roleUuid, reason);
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "ROLE_ASSIGNED",
+                actor,
+                "User: " + uuid,
+                "Revoked role " + roleUuid + ". Reason: " + reason,
+                "127.0.0.1",
+                "SUCCESS"
+        );
     }
 
     @PostMapping("/{uuid}/permissions")
@@ -171,7 +274,7 @@ public class UserController {
             @PathVariable("uuid") UUID uuid,
             @Valid @RequestBody GrantPermissionsToUserRequest request
     ) {
-        return grantPermissionsToUserUseCase.execute(
+        List<PermissionGrantResult> results = grantPermissionsToUserUseCase.execute(
                 new GrantPermissionsToUserCommand(
                         uuid,
                         request.permissionUuids(),
@@ -179,6 +282,16 @@ public class UserController {
                         request.expiresAt(),
                         request.reason()
                 ));
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "ROLE_ASSIGNED",
+                actor,
+                "User: " + uuid,
+                "Direct permission grant: " + request.permissionUuids() + " (" + request.effect() + ")",
+                "127.0.0.1",
+                "SUCCESS"
+        );
+        return results;
     }
 
     @DeleteMapping("/{uuid}/permissions/{permissionUuid}")
@@ -190,6 +303,15 @@ public class UserController {
             @RequestParam(name = "reason", required = false, defaultValue = "Revoked by administrator") String reason
     ) {
         revokePermissionFromUserUseCase.execute(uuid, permissionUuid, reason);
+        String actor = resolveCurrentActor();
+        loginHistoryService.recordAuditEvent(
+                "ROLE_ASSIGNED",
+                actor,
+                "User: " + uuid,
+                "Revoked permission " + permissionUuid + ". Reason: " + reason,
+                "127.0.0.1",
+                "SUCCESS"
+        );
     }
 
     @GetMapping("/{uuid}/identities")
@@ -207,5 +329,11 @@ public class UserController {
             @PathVariable("uuid") UUID uuid,
             @PathVariable("identityUuid") UUID identityUuid) {
         unlinkIdentityUseCase.execute(uuid, identityUuid);
+    }
+
+    @GetMapping("/{uuid}/login-history")
+    @PreAuthorize("hasAuthority('user:read')")
+    public List<LoginHistoryResponse> getUserLoginHistory(@PathVariable("uuid") UUID uuid) {
+        return loginHistoryService.getLoginHistory(uuid);
     }
 }

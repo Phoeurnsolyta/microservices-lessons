@@ -7,6 +7,11 @@ public record UserSummary(
         String username,
         String email,
         String name,
-        boolean enabled
+        boolean enabled,
+        String pictureUrl
 ) {
+
+    public UserSummary(UUID uuid, String username, String email, String name, boolean enabled) {
+        this(uuid, username, email, name, enabled, null);
+    }
 }

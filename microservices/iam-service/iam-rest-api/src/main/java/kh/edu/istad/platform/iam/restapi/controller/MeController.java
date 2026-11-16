@@ -4,6 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import kh.edu.istad.platform.iam.domain.dto.ChangePasswordCommand;
 import kh.edu.istad.platform.iam.domain.dto.UserResult;
+import kh.edu.istad.platform.iam.domain.entity.User;
+import kh.edu.istad.platform.iam.domain.exception.IamDomainException;
+import kh.edu.istad.platform.iam.domain.port.out.UserRepository;
 import kh.edu.istad.platform.iam.domain.usecase.identity.ListUserIdentitiesUseCase;
 import kh.edu.istad.platform.iam.domain.usecase.identity.UnlinkIdentityUseCase;
 import kh.edu.istad.platform.iam.domain.usecase.user.ChangePasswordUseCase;
@@ -13,20 +16,22 @@ import kh.edu.istad.platform.iam.restapi.dto.request.ChangePasswordRequest;
 import kh.edu.istad.platform.iam.restapi.dto.request.UpdateUserProfileRequest;
 import kh.edu.istad.platform.iam.restapi.dto.response.IdentityResponse;
 import kh.edu.istad.platform.iam.restapi.dto.response.LoginHistoryResponse;
-import kh.edu.istad.platform.iam.restapi.dto.response.UserResponse;
+import kh.edu.istad.platform.iam.restapi.dto.response.UserRoleSummaryResponse;
 import kh.edu.istad.platform.iam.restapi.dto.response.UserSessionResponse;
 import kh.edu.istad.platform.iam.restapi.mapper.UserWebMapper;
+import kh.edu.istad.platform.iam.restapi.service.RedisLoginHistoryService;
+import kh.edu.istad.platform.iam.restapi.service.RedisMediaStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
@@ -40,25 +45,189 @@ public class MeController {
     private final ListUserIdentitiesUseCase listUserIdentitiesUseCase;
     private final UnlinkIdentityUseCase unlinkIdentityUseCase;
     private final UserWebMapper userWebMapper;
+    private final UserRepository userRepository;
+    private final RedisMediaStorageService mediaStorageService;
+    private final RedisLoginHistoryService loginHistoryService;
 
-    // Track terminated sessions in memory
     private final Map<String, Boolean> revokedSessions = new ConcurrentHashMap<>();
 
     @GetMapping
-    public UserResponse getMe(@AuthenticationPrincipal Jwt jwt) {
+    public Map<String, Object> getMe(@AuthenticationPrincipal Jwt jwt) {
         UUID userUuid = UUID.fromString(jwt.getSubject());
-        return userWebMapper.toResponse(getUserUseCase.execute(userUuid));
+        User user = userRepository.findByUuid(userUuid)
+                .filter(u -> !u.isDeleted())
+                .orElseThrow(() -> new IamDomainException("User not found: " + userUuid));
+
+        UserResult result = getUserUseCase.execute(userUuid);
+        List<UserRoleSummaryResponse> roleResponses = result.roles().stream()
+                .map(userWebMapper::toRoleSummaryResponse)
+                .toList();
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("uuid", user.getUuid());
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        response.put("emailVerified", user.isEmailVerified());
+        response.put("name", user.getFullName());
+        response.put("givenName", user.getGivenName());
+        response.put("familyName", user.getFamilyName());
+        response.put("middleName", user.getMiddleName());
+        response.put("nickname", user.getNickname());
+        response.put("gender", user.getGender());
+        response.put("birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : null);
+        response.put("phoneNumber", user.getPhoneNumber());
+        response.put("pictureUrl", user.getPictureUrl());
+        response.put("profileUrl", user.getProfileUrl());
+        response.put("zoneinfo", user.getZoneinfo());
+        response.put("locale", user.getLocale());
+        response.put("enabled", user.isEnabled());
+        response.put("roles", roleResponses);
+        response.put("createdAt", user.getCreatedAt());
+        response.put("updatedAt", user.getUpdatedAt());
+
+        Map<String, Object> address = new LinkedHashMap<>();
+        address.put("streetAddress", user.getAddressStreetAddress() != null ? user.getAddressStreetAddress() : "");
+        address.put("locality", user.getAddressLocality() != null ? user.getAddressLocality() : "");
+        address.put("region", user.getAddressRegion() != null ? user.getAddressRegion() : "");
+        address.put("postalCode", user.getAddressPostalCode() != null ? user.getAddressPostalCode() : "");
+        address.put("country", user.getAddressCountry() != null ? user.getAddressCountry() : "KH");
+        response.put("address", address);
+
+        return response;
     }
 
     @PatchMapping
-    public UserResponse updateMe(
+    public Map<String, Object> updateMe(
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody UpdateUserProfileRequest request
     ) {
         UUID userUuid = UUID.fromString(jwt.getSubject());
-        UserResult result = updateUserProfileUseCase
-                .execute(userWebMapper.toCommand(userUuid, request));
-        return userWebMapper.toResponse(result);
+        updateUserProfileUseCase.execute(userWebMapper.toCommand(userUuid, request));
+        return getMe(jwt);
+    }
+
+    @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String, String> uploadAvatar(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files (JPEG, PNG, WEBP) are allowed");
+        }
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException("Avatar file size must be less than 5MB");
+        }
+
+        UUID userUuid = UUID.fromString(jwt.getSubject());
+        mediaStorageService.saveAvatar(userUuid, file.getBytes(), contentType);
+
+        String avatarUrl = "/api/media/avatars/" + userUuid + "?v=" + System.currentTimeMillis();
+
+        userRepository.findByUuid(userUuid).ifPresent(user -> {
+            User updated = User.builder()
+                    .id(user.getId())
+                    .uuid(user.getUuid())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .emailVerified(user.isEmailVerified())
+                    .passwordHash(user.getPasswordHash())
+                    .givenName(user.getGivenName())
+                    .familyName(user.getFamilyName())
+                    .middleName(user.getMiddleName())
+                    .nickname(user.getNickname())
+                    .gender(user.getGender())
+                    .birthdate(user.getBirthdate())
+                    .profileUrl(user.getProfileUrl())
+                    .pictureUrl(avatarUrl)
+                    .websiteUrl(user.getWebsiteUrl())
+                    .zoneinfo(user.getZoneinfo())
+                    .locale(user.getLocale())
+                    .phoneNumber(user.getPhoneNumber())
+                    .phoneNumberVerified(user.isPhoneNumberVerified())
+                    .addressStreetAddress(user.getAddressStreetAddress())
+                    .addressLocality(user.getAddressLocality())
+                    .addressRegion(user.getAddressRegion())
+                    .addressPostalCode(user.getAddressPostalCode())
+                    .addressCountry(user.getAddressCountry())
+                    .enabled(user.isEnabled())
+                    .accountNonExpired(user.isAccountNonExpired())
+                    .accountNonLocked(user.isAccountNonLocked())
+                    .credentialsNonExpired(user.isCredentialsNonExpired())
+                    .failedLoginAttempts(user.getFailedLoginAttempts())
+                    .lastLoginAt(user.getLastLoginAt())
+                    .passwordChangedAt(user.getPasswordChangedAt())
+                    .isDeleted(user.isDeleted())
+                    .deletedAt(user.getDeletedAt())
+                    .deletedBy(user.getDeletedBy())
+                    .createdAt(user.getCreatedAt())
+                    .createdBy(user.getCreatedBy())
+                    .updatedAt(Instant.now())
+                    .updatedBy(user.getUsername())
+                    .version(user.getVersion())
+                    .build();
+            userRepository.save(updated);
+        });
+
+        return Map.of(
+                "pictureUrl", avatarUrl,
+                "message", "Avatar uploaded and stored in Redis successfully"
+        );
+    }
+
+    @DeleteMapping("/avatar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAvatar(@AuthenticationPrincipal Jwt jwt) {
+        UUID userUuid = UUID.fromString(jwt.getSubject());
+        mediaStorageService.deleteAvatar(userUuid);
+
+        userRepository.findByUuid(userUuid).ifPresent(user -> {
+            User updated = User.builder()
+                    .id(user.getId())
+                    .uuid(user.getUuid())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .emailVerified(user.isEmailVerified())
+                    .passwordHash(user.getPasswordHash())
+                    .givenName(user.getGivenName())
+                    .familyName(user.getFamilyName())
+                    .middleName(user.getMiddleName())
+                    .nickname(user.getNickname())
+                    .gender(user.getGender())
+                    .birthdate(user.getBirthdate())
+                    .profileUrl(user.getProfileUrl())
+                    .pictureUrl(null)
+                    .websiteUrl(user.getWebsiteUrl())
+                    .zoneinfo(user.getZoneinfo())
+                    .locale(user.getLocale())
+                    .phoneNumber(user.getPhoneNumber())
+                    .phoneNumberVerified(user.isPhoneNumberVerified())
+                    .addressStreetAddress(user.getAddressStreetAddress())
+                    .addressLocality(user.getAddressLocality())
+                    .addressRegion(user.getAddressRegion())
+                    .addressPostalCode(user.getAddressPostalCode())
+                    .addressCountry(user.getAddressCountry())
+                    .enabled(user.isEnabled())
+                    .accountNonExpired(user.isAccountNonExpired())
+                    .accountNonLocked(user.isAccountNonLocked())
+                    .credentialsNonExpired(user.isCredentialsNonExpired())
+                    .failedLoginAttempts(user.getFailedLoginAttempts())
+                    .lastLoginAt(user.getLastLoginAt())
+                    .passwordChangedAt(user.getPasswordChangedAt())
+                    .isDeleted(user.isDeleted())
+                    .deletedAt(user.getDeletedAt())
+                    .deletedBy(user.getDeletedBy())
+                    .createdAt(user.getCreatedAt())
+                    .createdBy(user.getCreatedBy())
+                    .updatedAt(Instant.now())
+                    .updatedBy(user.getUsername())
+                    .version(user.getVersion())
+                    .build();
+            userRepository.save(updated);
+        });
     }
 
     @PutMapping("/password")
@@ -94,9 +263,6 @@ public class MeController {
         unlinkIdentityUseCase.execute(userUuid, identityUuid);
     }
 
-    // ==========================================
-    // REAL SESSIONS (From Authenticated User Request)
-    // ==========================================
     @GetMapping("/sessions")
     public List<UserSessionResponse> getActiveSessions(
             @AuthenticationPrincipal Jwt jwt,
@@ -118,7 +284,6 @@ public class MeController {
 
         Instant lastActive = jwt.getIssuedAt() != null ? jwt.getIssuedAt() : Instant.now();
 
-        // Return ONLY the real session currently authenticated!
         return List.of(new UserSessionResponse(
                 sessionId,
                 device,
@@ -142,33 +307,9 @@ public class MeController {
     }
 
     @GetMapping("/login-history")
-    public List<LoginHistoryResponse> getLoginHistory(
-            @AuthenticationPrincipal Jwt jwt,
-            HttpServletRequest request
-    ) {
+    public List<LoginHistoryResponse> getLoginHistory(@AuthenticationPrincipal Jwt jwt) {
         UUID userUuid = UUID.fromString(jwt.getSubject());
-        UserResult user = getUserUseCase.execute(userUuid);
-
-        String userAgent = request.getHeader("User-Agent");
-        String device = resolveDevice(userAgent) + " / " + resolveBrowser(userAgent);
-        String ipAddress = request.getRemoteAddr();
-        if ("0:0:0:0:0:0:0:1".equals(ipAddress) || "127.0.0.1".equals(ipAddress)) {
-            ipAddress = "127.0.0.1";
-        }
-
-        Instant loginTime = user.updatedAt() != null ? user.updatedAt() : Instant.now();
-
-        List<LoginHistoryResponse> history = new ArrayList<>();
-        history.add(new LoginHistoryResponse(
-                "lh-" + user.uuid().toString().substring(0, 8),
-                loginTime,
-                "SUCCESS",
-                ipAddress,
-                device,
-                "Phnom Penh, KH",
-                "Password Authentication"
-        ));
-        return history;
+        return loginHistoryService.getLoginHistory(userUuid);
     }
 
     @GetMapping("/activity")

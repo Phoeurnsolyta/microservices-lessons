@@ -37,23 +37,50 @@ public class FindOrProvisionFederatedUserUseCase {
                 command.providerSubject()
         );
         Instant now = Instant.now();
-        // 1. Check if this social identity already exists
-        Optional<Identity> existingIdentity = userRepository
-                .findIdentityByProvider(provider, command.providerSubject());
-        if (existingIdentity.isPresent()) {
-            Identity identity = existingIdentity.get();
-            identity.markLogin();
-            userRepository.saveIdentity(identity);
-            User user = userRepository.findById(identity.getUserId())
-                    .orElseThrow(() -> new IllegalStateException("User not found for identity: " + identity.getId()));
-            return loadUserForAuthenticationUseCase.execute(user.getUsername());
-        }
-        // 2. Check if a local user with the same email already exists
+
         User user = null;
         if (command.email() != null && command.emailVerified()) {
             user = userRepository.findByEmail(command.email().toLowerCase()).orElse(null);
         }
-        // 3. If no user exists, auto-provision a new user with default USER role
+
+        Optional<Identity> existingIdentity = userRepository
+                .findIdentityByProvider(provider, command.providerSubject());
+
+        if (existingIdentity.isPresent()) {
+            Identity identity = existingIdentity.get();
+            Long targetUserId = (user != null) ? user.getId() : identity.getUserId();
+
+            Identity updatedIdentity = Identity.builder()
+                    .id(identity.getId())
+                    .uuid(identity.getUuid())
+                    .userId(targetUserId)
+                    .provider(identity.getProvider())
+                    .providerSubject(identity.getProviderSubject())
+                    .email(command.email() != null ? command.email() : identity.getEmail())
+                    .emailVerified(command.emailVerified())
+                    .displayName(command.displayName() != null ? command.displayName() : identity.getDisplayName())
+                    .username(command.username() != null ? command.username() : identity.getUsername())
+                    .pictureUrl(command.pictureUrl() != null ? command.pictureUrl() : identity.getPictureUrl())
+                    .attributes(command.attributes())
+                    .linkedAt(identity.isDeleted() ? now : identity.getLinkedAt())
+                    .lastLoginAt(now)
+                    .isDeleted(false)
+                    .deletedAt(null)
+                    .deletedBy(null)
+                    .createdAt(identity.getCreatedAt())
+                    .createdBy(identity.getCreatedBy())
+                    .updatedAt(now)
+                    .updatedBy("social-reconnect")
+                    .version(identity.getVersion())
+                    .build();
+
+            userRepository.saveIdentity(updatedIdentity);
+
+            User authenticatedUser = userRepository.findById(targetUserId)
+                    .orElseThrow(() -> new IllegalStateException("User not found for identity: " + targetUserId));
+            return loadUserForAuthenticationUseCase.execute(authenticatedUser.getUsername());
+        }
+
         if (user == null) {
             String generatedUsername = command.username() != null
                     ? command.username()
@@ -80,6 +107,7 @@ public class FindOrProvisionFederatedUserUseCase {
                     .updatedBy("social-provider")
                     .build();
             user = userRepository.save(user);
+
             Role defaultRole = roleRepository.findByName("USER").orElse(null);
             if (defaultRole != null) {
                 UserRole userRole = UserRole.builder()
@@ -92,7 +120,7 @@ public class FindOrProvisionFederatedUserUseCase {
                 userRepository.saveUserRole(userRole);
             }
         }
-        // 4. Link the new social identity to the user with all required audit timestamps
+
         Identity newIdentity = Identity.builder()
                 .uuid(UUID.randomUUID())
                 .userId(user.getId())
@@ -113,6 +141,7 @@ public class FindOrProvisionFederatedUserUseCase {
                 .updatedBy("social-login")
                 .build();
         userRepository.saveIdentity(newIdentity);
+
         return loadUserForAuthenticationUseCase.execute(user.getUsername());
     }
 }

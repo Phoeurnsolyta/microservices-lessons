@@ -9,6 +9,7 @@ import kh.edu.istad.platform.iam.domain.entity.UserPermission;
 import kh.edu.istad.platform.iam.domain.entity.UserRole;
 import kh.edu.istad.platform.iam.domain.port.out.UserRepository;
 import kh.edu.istad.platform.iam.domain.valueobject.IdentityProvider;
+import kh.edu.istad.platform.iam.persistence.entity.IdentityEntity;
 import kh.edu.istad.platform.iam.persistence.entity.UserEntity;
 import kh.edu.istad.platform.iam.persistence.mapper.UserPersistenceMapper;
 import kh.edu.istad.platform.iam.persistence.repository.IdentityJpaRepository;
@@ -158,8 +159,9 @@ public class UserRepositoryAdapter implements UserRepository {
 
     @Override
     public Identity saveIdentity(Identity identity) {
-        return userPersistenceMapper
-                .toDomain(identityJpaRepository.save(userPersistenceMapper.toEntity(identity)));
+        IdentityEntity entity = userPersistenceMapper.toEntity(identity);
+        entity.setDeleted(identity.isDeleted());
+        return userPersistenceMapper.toDomain(identityJpaRepository.save(entity));
     }
 
     @Override
@@ -179,7 +181,7 @@ public class UserRepositoryAdapter implements UserRepository {
     public Optional<Identity> findIdentityByProvider(
             IdentityProvider provider, String providerSubject) {
         return identityJpaRepository
-                .findByProviderAndProviderSubjectAndIsDeletedFalse(
+                .findByProviderAndProviderSubject(
                         provider.name(), providerSubject
                 )
                 .map(userPersistenceMapper::toDomain);
