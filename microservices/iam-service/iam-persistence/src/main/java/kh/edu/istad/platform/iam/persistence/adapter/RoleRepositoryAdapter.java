@@ -34,6 +34,11 @@ public class RoleRepositoryAdapter implements RoleRepository {
     @Override
     public Role save(Role role) {
         RoleEntity entity = rolePersistenceMapper.toEntity(role);
+
+        entity.setActive(role.isActive());
+        entity.setSystem(role.isSystem());
+        entity.setDeleted(role.isDeleted());
+
         Instant now = Instant.now();
         if (entity.getCreatedAt() == null) {
             entity.setCreatedAt(now);
@@ -47,22 +52,44 @@ public class RoleRepositoryAdapter implements RoleRepository {
         if (entity.getUpdatedBy() == null || entity.getUpdatedBy().isBlank()) {
             entity.setUpdatedBy("admin");
         }
-        return rolePersistenceMapper.toDomain(roleJpaRepository.save(entity));
+        RoleEntity saved = roleJpaRepository.save(entity);
+        return mapToDomainWithFlags(saved);
+    }
+
+    private Role mapToDomainWithFlags(RoleEntity entity) {
+        if (entity == null) return null;
+        Role domain = rolePersistenceMapper.toDomain(entity);
+        return Role.builder()
+                .id(domain.getId())
+                .uuid(domain.getUuid())
+                .name(domain.getName())
+                .description(domain.getDescription())
+                .isSystem(entity.isSystem())
+                .isActive(entity.isActive())
+                .isDeleted(entity.isDeleted())
+                .deletedAt(domain.getDeletedAt())
+                .deletedBy(domain.getDeletedBy())
+                .createdAt(domain.getCreatedAt())
+                .createdBy(domain.getCreatedBy())
+                .updatedAt(domain.getUpdatedAt())
+                .updatedBy(domain.getUpdatedBy())
+                .version(domain.getVersion())
+                .build();
     }
 
     @Override
     public Optional<Role> findById(Long id) {
-        return roleJpaRepository.findById(id).map(rolePersistenceMapper::toDomain);
+        return roleJpaRepository.findById(id).map(this::mapToDomainWithFlags);
     }
 
     @Override
     public Optional<Role> findByUuid(UUID uuid) {
-        return roleJpaRepository.findByUuid(uuid).map(rolePersistenceMapper::toDomain);
+        return roleJpaRepository.findByUuid(uuid).map(this::mapToDomainWithFlags);
     }
 
     @Override
     public Optional<Role> findByName(String name) {
-        return roleJpaRepository.findByName(name).map(rolePersistenceMapper::toDomain);
+        return roleJpaRepository.findByName(name).map(this::mapToDomainWithFlags);
     }
 
     @Override
@@ -87,7 +114,12 @@ public class RoleRepositoryAdapter implements RoleRepository {
         Page<RoleEntity> page = roleJpaRepository.findAll(pageable);
 
         List<RoleSummary> content = page.getContent().stream()
-                .map(rolePersistenceMapper::toSummary)
+                .map(e -> new RoleSummary(
+                        e.getUuid(),
+                        e.getName(),
+                        e.getDescription(),
+                        e.isActive()
+                ))
                 .toList();
 
         return new PageResult<>(

@@ -30,6 +30,11 @@ public class PermissionRepositoryAdapter implements PermissionRepository {
     @Override
     public Permission save(Permission permission) {
         PermissionEntity entity = permissionPersistenceMapper.toEntity(permission);
+
+        entity.setActive(permission.isActive());
+        entity.setSystem(permission.isSystem());
+        entity.setDeleted(permission.isDeleted());
+
         Instant now = Instant.now();
         if (entity.getCreatedAt() == null) {
             entity.setCreatedAt(now);
@@ -43,22 +48,46 @@ public class PermissionRepositoryAdapter implements PermissionRepository {
         if (entity.getUpdatedBy() == null || entity.getUpdatedBy().isBlank()) {
             entity.setUpdatedBy("admin");
         }
-        return permissionPersistenceMapper.toDomain(permissionJpaRepository.save(entity));
+        PermissionEntity saved = permissionJpaRepository.save(entity);
+        return mapToDomainWithFlags(saved);
+    }
+
+    private Permission mapToDomainWithFlags(PermissionEntity entity) {
+        if (entity == null) return null;
+        Permission domain = permissionPersistenceMapper.toDomain(entity);
+        return Permission.builder()
+                .id(domain.getId())
+                .uuid(domain.getUuid())
+                .name(domain.getName())
+                .resource(domain.getResource())
+                .action(domain.getAction())
+                .description(domain.getDescription())
+                .isSystem(entity.isSystem())
+                .isActive(entity.isActive())
+                .isDeleted(entity.isDeleted())
+                .deletedAt(domain.getDeletedAt())
+                .deletedBy(domain.getDeletedBy())
+                .createdAt(domain.getCreatedAt())
+                .createdBy(domain.getCreatedBy())
+                .updatedAt(domain.getUpdatedAt())
+                .updatedBy(domain.getUpdatedBy())
+                .version(domain.getVersion())
+                .build();
     }
 
     @Override
     public Optional<Permission> findById(Long id) {
-        return permissionJpaRepository.findById(id).map(permissionPersistenceMapper::toDomain);
+        return permissionJpaRepository.findById(id).map(this::mapToDomainWithFlags);
     }
 
     @Override
     public Optional<Permission> findByUuid(UUID uuid) {
-        return permissionJpaRepository.findByUuid(uuid).map(permissionPersistenceMapper::toDomain);
+        return permissionJpaRepository.findByUuid(uuid).map(this::mapToDomainWithFlags);
     }
 
     @Override
     public Optional<Permission> findByName(String name) {
-        return permissionJpaRepository.findByName(name).map(permissionPersistenceMapper::toDomain);
+        return permissionJpaRepository.findByName(name).map(this::mapToDomainWithFlags);
     }
 
     @Override
@@ -101,7 +130,15 @@ public class PermissionRepositoryAdapter implements PermissionRepository {
         }
 
         List<PermissionResult> content = page.getContent().stream()
-                .map(permissionPersistenceMapper::toResult)
+                .map(e -> new PermissionResult(
+                        e.getUuid(),
+                        e.getName(),
+                        e.getResource(),
+                        e.getAction(),
+                        e.getDescription(),
+                        e.isActive(),
+                        e.isSystem()
+                ))
                 .toList();
 
         return new PageResult<>(

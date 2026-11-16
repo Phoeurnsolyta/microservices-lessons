@@ -24,7 +24,9 @@ import kh.edu.istad.platform.iam.restapi.service.RedisMediaStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +50,7 @@ public class MeController {
     private final UserRepository userRepository;
     private final RedisMediaStorageService mediaStorageService;
     private final RedisLoginHistoryService loginHistoryService;
+    private final PasswordEncoder passwordEncoder;
 
     private final Map<String, Boolean> revokedSessions = new ConcurrentHashMap<>();
 
@@ -336,6 +339,35 @@ public class MeController {
                         "timestamp", user.createdAt() != null ? user.createdAt().toString() : Instant.now().toString(),
                         "actor", "system"
                 )
+        );
+    }
+
+    @PostMapping("/deactivate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deactivateMyAccount(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody Map<String, String> body
+    ) {
+        UUID userUuid = UUID.fromString(jwt.getSubject());
+        User user = userRepository.findByUuid(userUuid)
+                .filter(u -> !u.isDeleted())
+                .orElseThrow(() -> new IamDomainException("User not found: " + userUuid));
+
+        String password = body.get("password");
+        if (password == null || password.isBlank() || !passwordEncoder.matches(password, user.getPasswordHash())) {
+            throw new BadCredentialsException("Invalid password confirmation. Please enter your correct password.");
+        }
+
+        user.setEnabled(false);
+        userRepository.save(user);
+
+        loginHistoryService.recordAuditEvent(
+                "USER_STATUS_CHANGE",
+                user.getUsername(),
+                "User: " + user.getUsername(),
+                "User self-deactivated account",
+                "127.0.0.1",
+                "SUCCESS"
         );
     }
 

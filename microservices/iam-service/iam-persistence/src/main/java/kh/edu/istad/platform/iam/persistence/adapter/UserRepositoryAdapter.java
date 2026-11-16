@@ -40,6 +40,12 @@ public class UserRepositoryAdapter implements UserRepository {
     @Override
     public User save(User user) {
         UserEntity entity = userPersistenceMapper.toEntity(user);
+        entity.setDeleted(user.isDeleted());
+        entity.setEnabled(user.isEnabled());
+        entity.setAccountNonLocked(user.isAccountNonLocked());
+        entity.setAccountNonExpired(user.isAccountNonExpired());
+        entity.setCredentialsNonExpired(user.isCredentialsNonExpired());
+
         return userPersistenceMapper.toDomain(userJpaRepository.save(entity));
     }
 

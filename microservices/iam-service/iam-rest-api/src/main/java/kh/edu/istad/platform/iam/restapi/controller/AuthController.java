@@ -90,6 +90,35 @@ public class AuthController {
         String userAgent = httpRequest.getHeader("User-Agent");
         String device = resolveDevice(userAgent);
 
+        // 1. Reject deactivated / disabled accounts
+        if (!user.enabled()) {
+            loginHistoryService.recordLogin(user.uuid(), "FAILED", ipAddress, device, "Phnom Penh, KH", "Account deactivated or disabled");
+            loginHistoryService.recordAuditEvent(
+                    "LOGIN_FAILURE",
+                    user.username(),
+                    "Auth Service",
+                    "Rejected login: Account is deactivated or disabled",
+                    ipAddress,
+                    "FAILURE"
+            );
+            throw new BadCredentialsException("Your account is deactivated or disabled. Please contact an administrator to restore access.");
+        }
+
+        // 2. Reject locked accounts
+        if (!user.accountNonLocked()) {
+            loginHistoryService.recordLogin(user.uuid(), "FAILED", ipAddress, device, "Phnom Penh, KH", "Account locked");
+            loginHistoryService.recordAuditEvent(
+                    "LOGIN_FAILURE",
+                    user.username(),
+                    "Auth Service",
+                    "Rejected login: Account is locked",
+                    ipAddress,
+                    "FAILURE"
+            );
+            throw new BadCredentialsException("Your account is locked. Please contact an administrator.");
+        }
+
+        // 3. Verify password credentials
         if (!passwordEncoder.matches(request.password(), user.passwordHash())) {
             loginHistoryService.recordLogin(user.uuid(), "FAILED", ipAddress, device, "Phnom Penh, KH", "Invalid password hash");
             loginHistoryService.recordAuditEvent(
@@ -142,7 +171,7 @@ public class AuthController {
 
         String token = jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(() -> "RS256").build(), claims)).getTokenValue();
 
-        // 1. Establish Spring Security Session so Spring Authorization Server & Gateway work
+        // Establish Spring Security Session
         List<SimpleGrantedAuthority> grantedAuthorities = authStrings.stream().map(SimpleGrantedAuthority::new).toList();
         UserDetails userDetails = User.builder()
                 .username(user.username())
@@ -159,7 +188,6 @@ public class AuthController {
         SecurityContextHolder.setContext(context);
         securityContextRepository.saveContext(context, httpRequest, httpResponse);
 
-        // 2. Check if user arrived from Gateway OAuth2 authorize flow
         SavedRequest savedRequest = requestCache.getRequest(httpRequest, httpResponse);
         String redirectUrl = savedRequest != null ? savedRequest.getRedirectUrl() : null;
         if (savedRequest != null) {
