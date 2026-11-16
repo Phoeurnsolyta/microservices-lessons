@@ -1,7 +1,7 @@
 import {useTranslation} from 'react-i18next';
 import {useAuthStore} from '../../store/useAuthStore';
 import {useNavigate} from 'react-router-dom';
-import {Shield, LogOut} from 'lucide-react';
+import {LogOut} from 'lucide-react';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 import {authService} from '../../services/authService';
 
@@ -26,12 +26,13 @@ export default function Navbar() {
         <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16 items-center">
-                    {/* Brand Logo */}
+                    {/* Brand Logo with Official ISTAD Emblem */}
                     <div className="flex items-center gap-3">
-                        <div
-                            className="w-10 h-10 rounded-2xl bg-[#4E6B56] flex items-center justify-center text-white shadow-md shadow-[#4E6B56]/20">
-                            <Shield className="w-5 h-5"/>
-                        </div>
+                        <img
+                            src="/istad-logo.png"
+                            alt="ISTAD Emblem"
+                            className="w-10 h-10 object-contain rounded-full shadow-xs hover:scale-105 transition"
+                        />
                         <div>
                             <span className="text-base font-bold tracking-tight text-slate-900 block leading-tight">
                                 ISTAD IAM
@@ -83,7 +84,7 @@ export default function Navbar() {
                             <button
                                 type="button"
                                 onClick={handleLogout}
-                                className="ml-2 p-2 rounded-full text-slate-500 hover:text-red-600 hover:bg-red-50 transition"
+                                className="ml-2 p-2 rounded-full text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
                                 title={t('common.logout')}
                             >
                                 <LogOut className="w-4 h-4"/>

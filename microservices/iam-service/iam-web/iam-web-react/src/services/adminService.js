@@ -154,7 +154,6 @@ export const adminService = {
         return true;
     },
 
-    // 3. PERMISSION MANAGEMENT APIS
     async getPermissions({resource = '', search = '', page = 0, size = 100, sort = 'name,asc'} = {}) {
         const params = new URLSearchParams();
         if (resource) params.append('resource', resource);
@@ -230,13 +229,14 @@ export const adminService = {
         return true;
     },
 
-    async getAuditLogs() {
-        try {
-            const response = await apiClient.get('/api/audit');
-            return response.data;
-        } catch {
-            return [];
-        }
+    async getAuditLogs({eventType = '', search = ''} = {}) {
+        const params = new URLSearchParams();
+        if (eventType) params.append('eventType', eventType);
+        if (search) params.append('search', search);
+
+        const query = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiClient.get(`/api/audit${query}`);
+        return response.data;
     },
 
     async getUserLoginHistory(uuid) {

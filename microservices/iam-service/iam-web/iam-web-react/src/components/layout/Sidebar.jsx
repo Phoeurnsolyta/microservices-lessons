@@ -127,7 +127,6 @@ export default function Sidebar() {
                         <span>ISTAD IAM Platform</span>
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     </div>
-                    <p className="text-[11px] text-slate-400">OAuth 2.1 & OpenID Connect 1.0 Enterprise Security</p>
                 </div>
             </div>
         </aside>
