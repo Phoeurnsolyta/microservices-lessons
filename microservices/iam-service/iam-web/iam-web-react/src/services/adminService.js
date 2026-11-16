@@ -192,40 +192,17 @@ export const adminService = {
     },
 
     async getClients() {
-        try {
-            const response = await apiClient.get('/api/clients');
-            return response.data;
-        } catch {
-            const saved = localStorage.getItem('istad_clients');
-            return saved ? JSON.parse(saved) : [];
-        }
+        const response = await apiClient.get('/api/clients');
+        return response.data;
     },
 
     async registerClient(clientData) {
-        try {
-            const response = await apiClient.post('/api/clients', clientData);
-            return response.data;
-        } catch {
-            const clients = await this.getClients();
-            const newClient = {
-                ...clientData,
-                id: `client-${Date.now()}`,
-                createdAt: new Date().toISOString(),
-            };
-            const updated = [newClient, ...clients];
-            localStorage.setItem('istad_clients', JSON.stringify(updated));
-            return newClient;
-        }
+        const response = await apiClient.post('/api/clients', clientData);
+        return response.data;
     },
 
     async deleteClient(id) {
-        try {
-            await apiClient.delete(`/api/clients/${id}`);
-        } catch {
-            const clients = await this.getClients();
-            const updated = clients.filter((c) => c.id !== id && c.clientId !== id);
-            localStorage.setItem('istad_clients', JSON.stringify(updated));
-        }
+        await apiClient.delete(`/api/clients/${id}`);
         return true;
     },
 

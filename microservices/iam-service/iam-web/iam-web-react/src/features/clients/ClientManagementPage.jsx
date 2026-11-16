@@ -40,6 +40,9 @@ export default function ClientManagementPage() {
 
     useEffect(() => {
         let isMounted = true;
+        // Clean out any old mock data from previous runs
+        localStorage.removeItem('istad_clients');
+
         adminService.getClients()
             .then((data) => {
                 if (isMounted) setClients(data || []);
@@ -85,8 +88,8 @@ export default function ClientManagementPage() {
 
     const filteredClients = clients.filter(
         (c) =>
-            c.clientName.toLowerCase().includes(search.toLowerCase()) ||
-            c.clientId.toLowerCase().includes(search.toLowerCase())
+            (c.clientName && c.clientName.toLowerCase().includes(search.toLowerCase())) ||
+            (c.clientId && c.clientId.toLowerCase().includes(search.toLowerCase()))
     );
 
     return (
@@ -145,7 +148,7 @@ export default function ClientManagementPage() {
                 </div>
             ) : filteredClients.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400 text-xs">
-                    No registered OAuth2 clients found.
+                    No registered OAuth2 clients found in the database.
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -208,7 +211,7 @@ export default function ClientManagementPage() {
                       Grant Types
                     </span>
                                         <div className="flex flex-wrap gap-1.5">
-                                            {client.grantTypes.map((gt) => (
+                                            {(client.grantTypes || []).map((gt) => (
                                                 <span key={gt}
                                                       className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md font-mono text-[10px]">
                           {gt}
@@ -222,7 +225,7 @@ export default function ClientManagementPage() {
                       Scopes
                     </span>
                                         <div className="flex flex-wrap gap-1.5">
-                                            {client.scopes.map((s) => (
+                                            {(client.scopes || []).map((s) => (
                                                 <span key={s}
                                                       className="px-2 py-0.5 bg-primary-50 text-primary-700 rounded-md font-mono text-[10px] font-semibold">
                           {s}
@@ -236,7 +239,7 @@ export default function ClientManagementPage() {
                       Redirect URIs
                     </span>
                                         <div className="space-y-1">
-                                            {client.redirectUris.map((uri) => (
+                                            {(client.redirectUris || []).map((uri) => (
                                                 <div key={uri}
                                                      className="flex items-center gap-1.5 text-slate-600 font-mono text-[11px] truncate">
                                                     <Globe className="w-3 h-3 text-slate-400 shrink-0"/>
@@ -257,7 +260,7 @@ export default function ClientManagementPage() {
                     onClose={() => setCreateModalOpen(false)}
                     onSuccess={() => {
                         setCreateModalOpen(false);
-                        showNotification('success', 'OAuth2 client registered successfully.');
+                        showNotification('success', 'OAuth2 client registered directly in database.');
                         refreshClients();
                     }}
                 />
@@ -323,7 +326,7 @@ function RegisterClientModal({onClose, onSuccess}) {
             });
             onSuccess();
         } catch (err) {
-            setError(err.message || 'Failed to register client');
+            setError(err.response?.data?.message || err.message || 'Failed to register client');
         } finally {
             setLoading(false);
         }

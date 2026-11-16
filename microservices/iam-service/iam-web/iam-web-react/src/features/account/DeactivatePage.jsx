@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useAuthStore} from '../../store/useAuthStore';
 import {useNavigate} from 'react-router-dom';
+import {userService} from '../../services/userService';
 import {AlertTriangle, Lock, ShieldAlert, Loader2} from 'lucide-react';
 
 export default function DeactivatePage() {
@@ -25,13 +26,16 @@ export default function DeactivatePage() {
         setError('');
 
         try {
-            // Deactivate workflow
-            await new Promise((res) => setTimeout(res, 1000));
-            alert('Your account deactivation request has been processed.');
+            await userService.deactivateAccount(password);
+            alert('Your account has been deactivated. You will now be redirected to the sign-in page.');
             logout();
             navigate('/login');
         } catch (err) {
-            setError(err.message || 'Deactivation failed.');
+            const msg = err.response?.data?.detail
+                || err.response?.data?.message
+                || err.message
+                || 'Deactivation failed. Please verify your password.';
+            setError(msg);
         } finally {
             setLoading(false);
         }
