@@ -21,7 +21,6 @@ import {
 export default function Sidebar() {
     const {t} = useTranslation();
     const hasRole = useAuthStore((state) => state.hasRole);
-
     const isAdmin = hasRole('ADMIN');
 
     const accountNav = [
@@ -46,11 +45,13 @@ export default function Sidebar() {
 
     return (
         <aside
-            className="w-64 shrink-0 bg-white border-r border-slate-200 min-h-[calc(100vh-4rem)] p-4 flex flex-col justify-between">
-            <div className="space-y-6">
+            className="w-64 shrink-0 bg-[#181B20] text-slate-300 h-[calc(100vh-5.5rem)] sticky top-20 self-start p-4 flex flex-col rounded-3xl my-3 shadow-xl overflow-hidden">
+
+            {/* Scrollable Navigation Area with Ultra-Thin Scrollbar */}
+            <div className="space-y-6 flex-1 overflow-y-auto pr-1 sidebar-scroll">
                 {/* Account Section */}
                 <div>
-                    <div className="px-3 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    <div className="px-3 mb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                         {t('nav.account')}
                     </div>
                     <nav className="space-y-1">
@@ -62,14 +63,14 @@ export default function Sidebar() {
                                     to={item.to}
                                     end={item.end}
                                     className={({isActive}) =>
-                                        `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                                        `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition ${
                                             isActive
                                                 ? item.danger
-                                                    ? 'bg-red-50 text-red-700'
-                                                    : 'bg-primary-50 text-primary-700 font-semibold'
+                                                    ? 'bg-red-500/20 text-red-300 font-bold'
+                                                    : 'bg-[#4E6B56] text-white shadow-md shadow-[#4E6B56]/30'
                                                 : item.danger
-                                                    ? 'text-slate-600 hover:text-red-600 hover:bg-red-50/50'
-                                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                                                    ? 'text-slate-400 hover:text-red-400 hover:bg-white/5'
+                                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
                                         }`
                                     }
                                 >
@@ -85,12 +86,12 @@ export default function Sidebar() {
                 {isAdmin && (
                     <div>
                         <div
-                            className="px-3 mb-2 text-xs font-semibold text-primary-700 uppercase tracking-wider flex items-center justify-between">
+                            className="px-3 mb-2 text-[11px] font-bold text-[#A8D1B6] uppercase tracking-wider flex items-center justify-between">
                             <span>{t('nav.management')}</span>
                             <span
-                                className="text-[10px] bg-primary-100 text-primary-800 px-1.5 py-0.5 rounded font-bold">
-                ADMIN
-              </span>
+                                className="text-[10px] bg-[#4E6B56]/40 text-[#C9E5D4] px-2 py-0.5 rounded-full font-bold border border-[#4E6B56]/60">
+                                ADMIN
+                            </span>
                         </div>
                         <nav className="space-y-1">
                             {adminNav.map((item) => {
@@ -101,10 +102,10 @@ export default function Sidebar() {
                                         to={item.to}
                                         end={item.end}
                                         className={({isActive}) =>
-                                            `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                                            `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition ${
                                                 isActive
-                                                    ? 'bg-primary-600 text-white shadow-sm'
-                                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                                                    ? 'bg-[#4E6B56] text-white shadow-md shadow-[#4E6B56]/30'
+                                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
                                             }`
                                         }
                                     >
@@ -118,9 +119,16 @@ export default function Sidebar() {
                 )}
             </div>
 
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-500">
-                <div className="font-semibold text-slate-700">ISTAD IAM v2.0</div>
-                <div>OAuth 2.1 / OIDC 1.0</div>
+            {/* Bottom Card */}
+            <div className="pt-3 shrink-0">
+                <div
+                    className="p-3.5 bg-gradient-to-br from-[#242930] to-[#1C2025] rounded-2xl border border-white/5 text-xs text-slate-300 space-y-1.5 shadow-sm">
+                    <div className="flex items-center justify-between font-bold text-white text-xs">
+                        <span>ISTAD IAM Platform</span>
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">OAuth 2.1 & OpenID Connect 1.0 Enterprise Security</p>
+                </div>
             </div>
         </aside>
     );

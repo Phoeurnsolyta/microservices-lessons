@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
+import {useAuthStore} from '../../store/useAuthStore';
 import {adminService} from '../../services/adminService';
 import {
     Users,
@@ -15,6 +16,7 @@ import {
 
 export default function AdminOverviewPage() {
     const {t} = useTranslation();
+    const currentUser = useAuthStore((state) => state.user);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalUsers: 0,
@@ -72,9 +74,9 @@ export default function AdminOverviewPage() {
         {
             title: t('management.totalUsers'),
             value: stats.totalUsers,
-            sub: `${stats.activeUsers} active`,
+            sub: `${stats.activeUsers} active accounts`,
             icon: Users,
-            color: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+            color: 'bg-[#EBF3EE] text-[#4E6B56] border-[#D0E2D6]',
             to: '/admin/users',
         },
         {
@@ -88,7 +90,7 @@ export default function AdminOverviewPage() {
         {
             title: t('management.totalPermissions'),
             value: stats.permissionsCount,
-            sub: 'Resource authority rules',
+            sub: 'Resource access rules',
             icon: Shield,
             color: 'bg-amber-50 text-amber-700 border-amber-100',
             to: '/admin/permissions',
@@ -98,17 +100,21 @@ export default function AdminOverviewPage() {
             value: stats.clientsCount,
             sub: 'OAuth 2.1 / OIDC clients',
             icon: Layers,
-            color: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+            color: 'bg-purple-50 text-purple-700 border-purple-100',
             to: '/admin/clients',
         },
     ];
 
+    const greetingName = currentUser?.givenName || currentUser?.name || currentUser?.username || 'Admin';
+
     return (
         <div className="space-y-6">
-            {/* Header Banner */}
+            {/* Header Greeting Banner (Image 1 Style) */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-xl font-bold text-slate-900">{t('management.overviewTitle')}</h1>
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                        Welcome back, {greetingName}
+                    </h1>
                     <p className="text-xs text-slate-500 mt-0.5">
                         Real-time status of ISTAD Identity Provider & Access Management Engine
                     </p>
@@ -116,7 +122,7 @@ export default function AdminOverviewPage() {
                 <div className="flex items-center gap-2">
                     <Link
                         to="/admin/users"
-                        className="flex items-center gap-1.5 px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold rounded-xl shadow-sm transition"
+                        className="flex items-center gap-1.5 px-4 py-2.5 bg-[#4E6B56] hover:bg-[#415a48] text-white text-xs font-bold rounded-2xl shadow-md shadow-[#4E6B56]/25 transition"
                     >
                         <Plus className="w-3.5 h-3.5"/>
                         <span>{t('management.createUser')}</span>
@@ -124,7 +130,7 @@ export default function AdminOverviewPage() {
                 </div>
             </div>
 
-            {/* Top Stat Cards */}
+            {/* Stat Cards (Ultra-rounded 3xl with subtle hover) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {statCards.map((card) => {
                     const Icon = card.icon;
@@ -132,20 +138,21 @@ export default function AdminOverviewPage() {
                         <Link
                             key={card.title}
                             to={card.to}
-                            className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-primary-300 transition group flex flex-col justify-between"
+                            className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm hover:border-[#4E6B56]/40 hover:shadow-md transition group flex flex-col justify-between"
                         >
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold text-slate-500">{card.title}</span>
-                                <div className={`p-2 rounded-xl border ${card.color}`}>
+                                <div className={`p-2.5 rounded-2xl border ${card.color}`}>
                                     <Icon className="w-4 h-4"/>
                                 </div>
                             </div>
                             <div className="mt-4">
-                                <div className="text-2xl font-bold text-slate-900">{card.value}</div>
+                                <div
+                                    className="text-3xl font-extrabold text-slate-900 tracking-tight">{card.value}</div>
                                 <div className="text-xs text-slate-400 mt-1 flex items-center justify-between">
                                     <span>{card.sub}</span>
                                     <ArrowUpRight
-                                        className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition"/>
+                                        className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 text-slate-400 group-hover:text-[#4E6B56] transition"/>
                                 </div>
                             </div>
                         </Link>
@@ -153,14 +160,14 @@ export default function AdminOverviewPage() {
                 })}
             </div>
 
-            {/* Registered Platform Users - Clean Full Width */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            {/* Registered Platform Users - Clean Full Width with Avatars */}
+            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-primary-600"/>
+                        <Activity className="w-4 h-4 text-[#4E6B56]"/>
                         <h2 className="text-sm font-bold text-slate-800">Registered Platform Users</h2>
                     </div>
-                    <Link to="/admin/users" className="text-xs text-primary-600 hover:underline font-semibold">
+                    <Link to="/admin/users" className="text-xs text-[#4E6B56] hover:underline font-bold">
                         Manage All Users ({stats.totalUsers})
                     </Link>
                 </div>
@@ -171,14 +178,30 @@ export default function AdminOverviewPage() {
                     ) : (
                         stats.recentUsers.map((u) => (
                             <div key={u.uuid} className="py-3 flex items-center justify-between gap-4 text-xs">
-                                <div>
-                                    <div className="font-semibold text-slate-900">{u.name || u.username}</div>
-                                    <div className="text-[11px] text-slate-400 font-mono">
-                                        @{u.username} • {u.email}
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-9 h-9 rounded-2xl bg-[#EBF3EE] text-[#4E6B56] flex items-center justify-center font-bold text-xs border border-[#D0E2D6] shrink-0 overflow-hidden shadow-2xs">
+                                        {u.pictureUrl ? (
+                                            <img
+                                                src={u.pictureUrl}
+                                                alt={u.name || u.username}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <span>{(u.name || u.username || 'U')[0].toUpperCase()}</span>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <div className="font-semibold text-slate-900 leading-tight">
+                                            {u.name || u.username}
+                                        </div>
+                                        <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                                            @{u.username} • {u.email}
+                                        </div>
                                     </div>
                                 </div>
                                 <span
-                                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                    className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                                         u.enabled
                                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                             : 'bg-slate-100 text-slate-500 border border-slate-200'

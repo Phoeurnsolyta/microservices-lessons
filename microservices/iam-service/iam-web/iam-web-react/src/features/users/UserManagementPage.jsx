@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import {adminService} from '../../services/adminService';
+import ConfirmModal from '../../components/common/ConfirmModal';
 import {
     Search,
     Plus,
@@ -40,24 +41,6 @@ const STATIC_USER_SESSIONS = [
     },
 ];
 
-const STATIC_USER_HISTORY = [
-    {
-        id: 'lh-1',
-        status: 'SUCCESS',
-        ipAddress: '192.168.1.105',
-        device: 'Windows 11 / Chrome 124',
-        timestamp: '2026-11-15T10:30:00.000Z',
-    },
-    {
-        id: 'lh-2',
-        status: 'FAILED',
-        ipAddress: '103.216.51.12',
-        device: 'Linux / Firefox',
-        reason: 'Bad password hash',
-        timestamp: '2026-11-15T08:00:00.000Z',
-    },
-];
-
 export default function UserManagementPage() {
     const {t} = useTranslation();
     const [users, setUsers] = useState([]);
@@ -75,6 +58,8 @@ export default function UserManagementPage() {
     const [passwordModalUser, setPasswordModalUser] = useState(null);
     const [sessionsModalUser, setSessionsModalUser] = useState(null);
     const [historyModalUser, setHistoryModalUser] = useState(null);
+    const [deleteModalUser, setDeleteModalUser] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     const showNotification = (type, message) => {
         setNotification({type, message});
@@ -154,14 +139,19 @@ export default function UserManagementPage() {
         }
     };
 
-    const handleDeleteUser = async (user) => {
-        if (!window.confirm(`Are you sure you want to delete user @${user.username}?`)) return;
+    // Custom Modal Delete Handler
+    const handleConfirmDelete = async () => {
+        if (!deleteModalUser) return;
+        setDeleting(true);
         try {
-            await adminService.deleteUser(user.uuid);
-            showNotification('success', `User @${user.username} deleted.`);
+            await adminService.deleteUser(deleteModalUser.uuid);
+            showNotification('success', `User @${deleteModalUser.username} deleted.`);
+            setDeleteModalUser(null);
             refreshUsers();
         } catch (err) {
             showNotification('error', err.message);
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -265,36 +255,58 @@ export default function UserManagementPage() {
                         ) : (
                             users.map((user) => (
                                 <tr key={user.uuid} className="hover:bg-slate-50/70 transition">
+                                    {/* USER COLUMN WITH AVATAR */}
                                     <td className="py-3 px-4">
-                                        <div className="font-semibold text-slate-900">{user.name || user.username}</div>
-                                        <div className="text-[11px] text-slate-400 font-mono">@{user.username}</div>
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="w-9 h-9 rounded-xl bg-primary-100 text-primary-800 flex items-center justify-center font-bold text-xs border border-primary-200 shrink-0 overflow-hidden shadow-2xs">
+                                                {user.pictureUrl ? (
+                                                    <img
+                                                        src={user.pictureUrl}
+                                                        alt={user.name || user.username}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <span>{(user.name || user.username || 'U')[0].toUpperCase()}</span>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <div className="font-semibold text-slate-900 leading-tight">
+                                                    {user.name || user.username}
+                                                </div>
+                                                <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                                                    @{user.username}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td className="py-3 px-4">
                                         <div>{user.email}</div>
                                     </td>
                                     <td className="py-3 px-4">
-                      <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              user.enabled
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                  : 'bg-slate-100 text-slate-600 border border-slate-200'
-                          }`}
-                      >
-                        {user.enabled ? <CheckCircle className="w-3 h-3"/> : <XCircle className="w-3 h-3"/>}
-                          {user.enabled ? t('common.enabled') : t('common.disabled')}
-                      </span>
+                                        <span
+                                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                                user.enabled
+                                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                    : 'bg-slate-100 text-slate-600 border border-slate-200'
+                                            }`}
+                                        >
+                                            {user.enabled ? <CheckCircle className="w-3 h-3"/> :
+                                                <XCircle className="w-3 h-3"/>}
+                                            {user.enabled ? t('common.enabled') : t('common.disabled')}
+                                        </span>
                                     </td>
                                     <td className="py-3 px-4">
-                      <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              user.locked
-                                  ? 'bg-red-50 text-red-700 border border-red-200'
-                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          }`}
-                      >
-                        {user.locked ? <Lock className="w-3 h-3"/> : <Unlock className="w-3 h-3"/>}
-                          {user.locked ? 'Locked' : 'Unlocked'}
-                      </span>
+                                        <span
+                                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                                user.locked
+                                                    ? 'bg-red-50 text-red-700 border border-red-200'
+                                                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                            }`}
+                                        >
+                                            {user.locked ? <Lock className="w-3 h-3"/> : <Unlock className="w-3 h-3"/>}
+                                            {user.locked ? 'Locked' : 'Unlocked'}
+                                        </span>
                                     </td>
                                     <td className="py-3 px-4 text-right">
                                         <div className="flex items-center justify-end gap-1">
@@ -351,7 +363,7 @@ export default function UserManagementPage() {
                                             </button>
                                             <button
                                                 title="Delete User"
-                                                onClick={() => handleDeleteUser(user)}
+                                                onClick={() => setDeleteModalUser(user)}
                                                 className="p-1.5 hover:bg-red-50 text-red-600 rounded-lg transition"
                                             >
                                                 <Trash2 className="w-4 h-4"/>
@@ -367,9 +379,9 @@ export default function UserManagementPage() {
 
                 {/* Pagination Bar */}
                 <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-          <span>
-            Page {page + 1} of {Math.max(totalPages, 1)}
-          </span>
+                    <span>
+                        Page {page + 1} of {Math.max(totalPages, 1)}
+                    </span>
                     <div className="flex gap-2">
                         <button
                             disabled={page === 0}
@@ -389,6 +401,7 @@ export default function UserManagementPage() {
                 </div>
             </div>
 
+            {/* Modal Components */}
             {createModalOpen && (
                 <CreateUserModal
                     onClose={() => setCreateModalOpen(false)}
@@ -446,10 +459,22 @@ export default function UserManagementPage() {
                     onClose={() => setHistoryModalUser(null)}
                 />
             )}
+
+            {/* Custom Modal for User Deletion */}
+            <ConfirmModal
+                isOpen={Boolean(deleteModalUser)}
+                onClose={() => setDeleteModalUser(null)}
+                onConfirm={handleConfirmDelete}
+                title="Delete User Account"
+                message={`Are you sure you want to delete user @${deleteModalUser?.username}? This action is irreversible.`}
+                confirmText="Delete User"
+                cancelText="Cancel"
+                variant="danger"
+                loading={deleting}
+            />
         </div>
     );
 }
-
 
 function CreateUserModal({onClose, onSuccess}) {
     const [form, setForm] = useState({
@@ -610,7 +635,6 @@ function UserRoleAssignmentModal({user, onClose, onSuccess}) {
             .then(([rolesRes, userAuthRes]) => {
                 if (isMounted) {
                     setAllRoles(rolesRes.content || []);
-                    // Read r.uuid (backend field name) and filter out any null/undefined
                     const currentUuids = new Set(
                         (userAuthRes.roles || [])
                             .map((r) => r.uuid || r.roleUuid)
@@ -664,9 +688,19 @@ function UserRoleAssignmentModal({user, onClose, onSuccess}) {
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-xl overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-slate-100">
-                    <div>
-                        <h3 className="font-bold text-slate-900 text-sm">Assign Roles</h3>
-                        <p className="text-[11px] text-slate-400">User: @{user.username}</p>
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="w-8 h-8 rounded-xl bg-primary-100 text-primary-800 flex items-center justify-center font-bold text-xs border border-primary-200 shrink-0 overflow-hidden">
+                            {user.pictureUrl ? (
+                                <img src={user.pictureUrl} alt={user.username} className="w-full h-full object-cover"/>
+                            ) : (
+                                <span>{(user.name || user.username || 'U')[0].toUpperCase()}</span>
+                            )}
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-900 text-sm">Assign Roles</h3>
+                            <p className="text-[11px] text-slate-400">@{user.username}</p>
+                        </div>
                     </div>
                     <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
                         <X className="w-4 h-4"/>
@@ -785,9 +819,19 @@ function UserPermissionAssignmentModal({user, onClose, onSuccess}) {
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-xl overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-slate-100">
-                    <div>
-                        <h3 className="font-bold text-slate-900 text-sm">Direct Permission Grant</h3>
-                        <p className="text-[11px] text-slate-400">User: @{user.username}</p>
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="w-8 h-8 rounded-xl bg-primary-100 text-primary-800 flex items-center justify-center font-bold text-xs border border-primary-200 shrink-0 overflow-hidden">
+                            {user.pictureUrl ? (
+                                <img src={user.pictureUrl} alt={user.username} className="w-full h-full object-cover"/>
+                            ) : (
+                                <span>{(user.name || user.username || 'U')[0].toUpperCase()}</span>
+                            )}
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-900 text-sm">Direct Permission Grant</h3>
+                            <p className="text-[11px] text-slate-400">@{user.username}</p>
+                        </div>
                     </div>
                     <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
                         <X className="w-4 h-4"/>
@@ -850,7 +894,7 @@ function UserPermissionAssignmentModal({user, onClose, onSuccess}) {
                                                     : 'border-slate-300 bg-white'
                                             }`}
                                         >
-                                            {checked && <Check className="w-3 h-3"/>}
+                                            {checked && <Check className="w-3.5 h-3.5"/>}
                                         </div>
                                     </div>
                                 );
@@ -902,9 +946,19 @@ function AdminResetPasswordModal({user, onClose, onSuccess}) {
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-sm w-full border border-slate-200 shadow-xl overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-slate-100">
-                    <div>
-                        <h3 className="font-bold text-slate-900 text-sm">Force Password Reset</h3>
-                        <p className="text-[11px] text-slate-400">User: @{user.username}</p>
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="w-8 h-8 rounded-xl bg-primary-100 text-primary-800 flex items-center justify-center font-bold text-xs border border-primary-200 shrink-0 overflow-hidden">
+                            {user.pictureUrl ? (
+                                <img src={user.pictureUrl} alt={user.username} className="w-full h-full object-cover"/>
+                            ) : (
+                                <span>{(user.name || user.username || 'U')[0].toUpperCase()}</span>
+                            )}
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-900 text-sm">Force Password Reset</h3>
+                            <p className="text-[11px] text-slate-400">@{user.username}</p>
+                        </div>
                     </div>
                     <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
                         <X className="w-4 h-4"/>
@@ -960,9 +1014,19 @@ function UserSessionsInspectorModal({user, onClose}) {
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-xl overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-slate-100">
-                    <div>
-                        <h3 className="font-bold text-slate-900 text-sm">Active User Sessions</h3>
-                        <p className="text-[11px] text-slate-400">User: @{user.username}</p>
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="w-8 h-8 rounded-xl bg-primary-100 text-primary-800 flex items-center justify-center font-bold text-xs border border-primary-200 shrink-0 overflow-hidden">
+                            {user.pictureUrl ? (
+                                <img src={user.pictureUrl} alt={user.username} className="w-full h-full object-cover"/>
+                            ) : (
+                                <span>{(user.name || user.username || 'U')[0].toUpperCase()}</span>
+                            )}
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-900 text-sm">Active User Sessions</h3>
+                            <p className="text-[11px] text-slate-400">@{user.username}</p>
+                        </div>
                     </div>
                     <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
                         <X className="w-4 h-4"/>
@@ -978,8 +1042,8 @@ function UserSessionsInspectorModal({user, onClose}) {
                                 {sess.isCurrent && (
                                     <span
                                         className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">
-                    CURRENT
-                  </span>
+                                        CURRENT
+                                    </span>
                                 )}
                             </div>
                             <div className="text-slate-500 flex items-center justify-between">
@@ -1008,14 +1072,47 @@ function UserSessionsInspectorModal({user, onClose}) {
     );
 }
 
+// REAL REDIS USER LOGIN HISTORY INSPECTOR
 function UserLoginHistoryInspectorModal({user, onClose}) {
+    const [history, setHistory] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let isMounted = true;
+        adminService.getUserLoginHistory(user.uuid)
+            .then((data) => {
+                if (isMounted) setHistory(data || []);
+            })
+            .catch((err) => {
+                console.error('Failed to load user login history:', err);
+                if (isMounted) setHistory([]);
+            })
+            .finally(() => {
+                if (isMounted) setLoading(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [user.uuid]);
+
     return (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-xl overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-slate-100">
-                    <div>
-                        <h3 className="font-bold text-slate-900 text-sm">User Login History & Security</h3>
-                        <p className="text-[11px] text-slate-400">User: @{user.username}</p>
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="w-8 h-8 rounded-xl bg-primary-100 text-primary-800 flex items-center justify-center font-bold text-xs border border-primary-200 shrink-0 overflow-hidden">
+                            {user.pictureUrl ? (
+                                <img src={user.pictureUrl} alt={user.username} className="w-full h-full object-cover"/>
+                            ) : (
+                                <span>{(user.name || user.username || 'U')[0].toUpperCase()}</span>
+                            )}
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-900 text-sm">User Login History & Security</h3>
+                            <p className="text-[11px] text-slate-400">@{user.username}</p>
+                        </div>
                     </div>
                     <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
                         <X className="w-4 h-4"/>
@@ -1023,25 +1120,40 @@ function UserLoginHistoryInspectorModal({user, onClose}) {
                 </div>
 
                 <div className="p-4 space-y-2.5 max-h-72 overflow-y-auto">
-                    {STATIC_USER_HISTORY.map((item) => (
-                        <div key={item.id}
-                             className="p-2.5 rounded-xl border border-slate-200 text-xs flex items-center justify-between">
-                            <div>
-                                <div className="font-semibold text-slate-800">{item.device}</div>
-                                <div
-                                    className="text-[11px] text-slate-400 font-mono">{item.ipAddress} • {item.reason || 'Normal sign in'}</div>
-                            </div>
-                            <span
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                    item.status === 'SUCCESS'
-                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                        : 'bg-red-50 text-red-700 border border-red-200'
-                                }`}
-                            >
-                {item.status}
-              </span>
+                    {loading ? (
+                        <div className="py-8 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin"/>
+                            <span>Loading real login logs...</span>
                         </div>
-                    ))}
+                    ) : history.length === 0 ? (
+                        <div className="py-8 text-center text-slate-400 text-xs">
+                            No login activity recorded yet for this user.
+                        </div>
+                    ) : (
+                        history.map((item) => (
+                            <div key={item.id}
+                                 className="p-2.5 rounded-xl border border-slate-200 text-xs flex items-center justify-between">
+                                <div>
+                                    <div className="font-semibold text-slate-800">{item.device}</div>
+                                    <div className="text-[11px] text-slate-400 font-mono">
+                                        {item.ipAddress} • {item.reason || 'Normal sign in'}
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 mt-0.5">
+                                        {new Date(item.timestamp).toLocaleString()}
+                                    </div>
+                                </div>
+                                <span
+                                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                        item.status === 'SUCCESS'
+                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                            : 'bg-red-50 text-red-700 border border-red-200'
+                                    }`}
+                                >
+                                    {item.status}
+                                </span>
+                            </div>
+                        ))
+                    )}
                 </div>
 
                 <div className="p-3 border-t border-slate-100 flex justify-end bg-slate-50">

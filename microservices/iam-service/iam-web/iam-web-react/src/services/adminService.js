@@ -239,6 +239,11 @@ export const adminService = {
         }
     },
 
+    async getUserLoginHistory(uuid) {
+        const response = await apiClient.get(`/api/users/${uuid}/login-history`);
+        return response.data;
+    },
+
     getSystemSettings() {
         const saved = localStorage.getItem('istad_system_settings');
         if (saved) return JSON.parse(saved);

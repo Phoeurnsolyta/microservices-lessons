@@ -11,6 +11,22 @@ export const userService = {
         return response.data;
     },
 
+    async uploadAvatar(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await apiClient.post('/api/me/avatar', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    },
+
+    async deleteAvatar() {
+        const response = await apiClient.delete('/api/me/avatar');
+        return response.data;
+    },
+
     async changePassword({currentPassword, newPassword, confirmPassword}) {
         const response = await apiClient.put('/api/me/password', {
             currentPassword,
