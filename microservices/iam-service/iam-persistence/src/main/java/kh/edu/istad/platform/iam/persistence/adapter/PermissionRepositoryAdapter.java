@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +30,19 @@ public class PermissionRepositoryAdapter implements PermissionRepository {
     @Override
     public Permission save(Permission permission) {
         PermissionEntity entity = permissionPersistenceMapper.toEntity(permission);
+        Instant now = Instant.now();
+        if (entity.getCreatedAt() == null) {
+            entity.setCreatedAt(now);
+        }
+        if (entity.getUpdatedAt() == null) {
+            entity.setUpdatedAt(now);
+        }
+        if (entity.getCreatedBy() == null || entity.getCreatedBy().isBlank()) {
+            entity.setCreatedBy("admin");
+        }
+        if (entity.getUpdatedBy() == null || entity.getUpdatedBy().isBlank()) {
+            entity.setUpdatedBy("admin");
+        }
         return permissionPersistenceMapper.toDomain(permissionJpaRepository.save(entity));
     }
 

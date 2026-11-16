@@ -36,14 +36,19 @@ public class CreateRoleUseCase {
             throw new IamDomainException("Role already exists: " + roleName);
         }
 
-        String actor = currentActorProvider.getCurrentActorSub();
+        Instant now = Instant.now();
+        String actor = (currentActorProvider != null && currentActorProvider.getCurrentActorSub() != null)
+                ? currentActorProvider.getCurrentActorSub()
+                : "admin";
         Role role = Role.builder()
                 .uuid(UUID.randomUUID())
                 .name(roleName)
                 .description(command.description())
                 .isSystem(false)
                 .isActive(true)
+                .createdAt(now)
                 .createdBy(actor)
+                .updatedAt(now)
                 .updatedBy(actor)
                 .build();
 

@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +34,19 @@ public class RoleRepositoryAdapter implements RoleRepository {
     @Override
     public Role save(Role role) {
         RoleEntity entity = rolePersistenceMapper.toEntity(role);
+        Instant now = Instant.now();
+        if (entity.getCreatedAt() == null) {
+            entity.setCreatedAt(now);
+        }
+        if (entity.getUpdatedAt() == null) {
+            entity.setUpdatedAt(now);
+        }
+        if (entity.getCreatedBy() == null || entity.getCreatedBy().isBlank()) {
+            entity.setCreatedBy("admin");
+        }
+        if (entity.getUpdatedBy() == null || entity.getUpdatedBy().isBlank()) {
+            entity.setUpdatedBy("admin");
+        }
         return rolePersistenceMapper.toDomain(roleJpaRepository.save(entity));
     }
 

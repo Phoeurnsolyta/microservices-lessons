@@ -9,6 +9,7 @@ import kh.edu.istad.platform.iam.domain.port.out.PermissionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Component
@@ -29,7 +30,10 @@ public class CreatePermissionUseCase {
             throw new IamDomainException("Permission already exists: " + permName);
         }
 
-        String actor = currentActorProvider.getCurrentActorSub();
+        Instant now = Instant.now();
+        String actor = (currentActorProvider != null && currentActorProvider.getCurrentActorSub() != null)
+                ? currentActorProvider.getCurrentActorSub()
+                : "admin";
 
         Permission permission = Permission.builder()
                 .uuid(UUID.randomUUID())
@@ -39,7 +43,9 @@ public class CreatePermissionUseCase {
                 .description(command.description())
                 .isSystem(false)
                 .isActive(true)
+                .createdAt(now)
                 .createdBy(actor)
+                .updatedAt(now)
                 .updatedBy(actor)
                 .build();
 
