@@ -1,0 +1,15 @@
+services:
+  nexus:
+    container_name: istad-nexus
+    image: sonatype/nexus3:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+      - "8082:8082"
+    volumes:
+      - nexus-data:/nexus-data
+    environment:
+      INSTALL4J_ADD_VM_PARAMS: "-Xms2g -Xmx2g -XX:MaxDirectMemorySize=2g"
+
+volumes:
+  nexus-data:
