@@ -15,6 +15,7 @@
               <build path="$PROJECT_DIR$/istad-common" name="istad-common">
                 <projects>
                   <project path="$PROJECT_DIR$/istad-common" />
+                  <project path="$PROJECT_DIR$/istad-common/istad-common-bom" />
                   <project path="$PROJECT_DIR$/istad-common/istad-common-domain" />
                   <project path="$PROJECT_DIR$/istad-common/istad-common-grpc" />
                   <project path="$PROJECT_DIR$/istad-common/istad-common-restapi" />
@@ -112,6 +113,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/build-logic" />
             <option value="$PROJECT_DIR$/istad-common" />
+            <option value="$PROJECT_DIR$/istad-common/istad-common-bom" />
             <option value="$PROJECT_DIR$/istad-common/istad-common-domain" />
             <option value="$PROJECT_DIR$/istad-common/istad-common-grpc" />
             <option value="$PROJECT_DIR$/istad-common/istad-common-restapi" />

@@ -1,0 +1,17 @@
+plugins {
+    id 'java-platform'
+    id 'java-publication'
+}
+
+group = 'kh.edu.istad'
+version = '1.0.2'
+
+javaPlatform {
+    allowDependencies()
+}
+
+dependencies {
+    constraints {
+        api 'kh.edu.istad:istad-common-domain:1.0.3'
+    }
+}

@@ -1,0 +1,48 @@
+plugins {
+    id 'maven-publish'
+}
+
+publishing {
+    repositories {
+        maven {
+            name = 'nexus'
+            url = uri('http://localhost:8081/repository/istad-common-bom/')
+            allowInsecureProtocol = true
+            credentials {
+                username = providers.gradleProperty('nexusUsername').getOrNull() ?: findProperty('nexusUsername')
+                password = providers.gradleProperty('nexusPassword').getOrNull() ?: findProperty('nexusPassword')
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/Phoeurnsolyta/microservices-lessons")
+                credentials {
+                    username = providers.gradleProperty("gpr.user").getOrNull() ?: System.getenv("USERNAME")
+                    password = providers.gradleProperty("gpr.key").getOrNull() ?: System.getenv("TOKEN")
+                }
+            }
+        }
+    }
+
+    plugins.withId('java') {
+        publishing {
+            publications {
+                mavenJava(MavenPublication) {
+                    from components.java
+                }
+            }
+        }
+    }
+
+    plugins.withId('java-platform') {
+        publishing {
+            publications {
+                mavenJavaPlatform(MavenPublication) {
+                    from components.javaPlatform
+                }
+            }
+        }
+    }
+}
